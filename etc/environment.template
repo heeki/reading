@@ -1,0 +1,26 @@
+PROFILE=your-aws-profile
+REGION=us-east-1
+BUCKET=your-deployment-bucket
+
+P_HOSTEDZONE_ID=your-hosted-zone-id
+P_DOMAINNAME=your.custom.domain.com
+INFRASTRUCTURE_STACK=api-infrastructure
+INFRASTRUCTURE_TEMPLATE=iac/sam/infrastructure.yaml
+INFRASTRUCTURE_OUTPUT=iac/sam/infrastructure_output.yaml
+INFRASTRUCTURE_PARAMS="ParameterKey=pDomainName,ParameterValue=${P_DOMAINNAME} ParameterKey=pHostedZoneId,ParameterValue=${P_HOSTEDZONE_ID}"
+O_CERT_ARN=output-certificate-arn
+
+P_API_BASEPATH=reading
+P_API_STAGE=dev
+P_FN_MEMORY=128
+P_FN_TIMEOUT=15
+APIGW_STACK=reading-api
+APIGW_TEMPLATE=iac/sam/apigw.yaml
+APIGW_OUTPUT=iac/sam/apigw_output.yaml
+APIGW_PARAMS="ParameterKey=pApiDomainName,ParameterValue=${P_DOMAINNAME} ParameterKey=pApiBasePath,ParameterValue=${P_API_BASEPATH} ParameterKey=pApiStage,ParameterValue=${P_API_STAGE} ParameterKey=pFnMemory,ParameterValue=${P_FN_MEMORY} ParameterKey=pFnTimeout,ParameterValue=${P_FN_TIMEOUT}"
+O_FN=output-fn-name
+O_API_ENDPOINT=output-api-endpoint
+O_CUSTOM_ENDPOINT=https://your.custom.domain.com/reading
+O_TABLE_ARN=output-table-arn
+
+export TABLE=table-name
