@@ -1,0 +1,150 @@
+openapi: 3.0.1
+info:
+  title: reading-api
+  description: Base template for API Gateway endpoints
+  version: 0.1.0
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+
+components:
+  schemas:
+    error:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+        message:
+          type: string
+    group:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+    user:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        group:
+          type: string
+    users:
+      type: array
+      items:
+        $ref: "#/components/schemas/user"
+    uid:
+      type: object
+      properties:
+        uid:
+          type: string
+  responses:
+    error:
+      description: internal server error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/error"
+          example:
+            code: 500
+            message: "unable to retrieve message"
+
+paths:
+  /user:
+    get:
+      summary: user
+      description: returns list of users
+      responses:
+        200:
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/user"
+        500:
+          $ref: "#/components/responses/error"
+        default:
+          $ref: "#/components/responses/error"
+      x-amazon-apigateway-integration:
+        httpMethod: POST
+        payloadFormatVersion: "1.0"
+        type: AWS_PROXY
+        uri:
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${FnUser}/invocations"
+    post:
+      summary: user
+      description: create user
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/user"
+      responses:
+        200:
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/user"
+        500:
+          $ref: "#/components/responses/error"
+        default:
+          $ref: "#/components/responses/error"
+      x-amazon-apigateway-integration:
+        httpMethod: POST
+        payloadFormatVersion: "1.0"
+        type: AWS_PROXY
+        uri:
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${FnGroup}/invocations"
+  /group:
+    get:
+      summary: group
+      description: returns list of groups
+      responses:
+        200:
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/group"
+        500:
+          $ref: "#/components/responses/error"
+        default:
+          $ref: "#/components/responses/error"
+      x-amazon-apigateway-integration:
+        httpMethod: POST
+        payloadFormatVersion: "1.0"
+        type: AWS_PROXY
+        uri:
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${FnGroup}/invocations"
+    post:
+      summary: group
+      description: create group
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/group"
+      responses:
+        200:
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/group"
+        500:
+          $ref: "#/components/responses/error"
+        default:
+          $ref: "#/components/responses/error"
+      x-amazon-apigateway-integration:
+        httpMethod: POST
+        payloadFormatVersion: "1.0"
+        type: AWS_PROXY
+        uri:
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${FnGroup}/invocations"
