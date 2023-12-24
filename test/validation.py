@@ -1,8 +1,11 @@
+import datetime
 import json
 import unittest
+import uuid
 from lib.domain.group import Group
 from lib.domain.user import User
 from lib.domain.plan import Plan
+from lib.domain.reading import Reading
 
 class Tests(unittest.TestCase):
     def setUp(self):
@@ -102,10 +105,45 @@ class Tests(unittest.TestCase):
         self.assertEqual(updated_plan_count, baseline_plan_count)
         print(f"deleted plan with uid={uid}")
 
+    def test_reading(self):
+        # baseline
+        reading = Reading()
+        baseline_reading_list = reading.list_readings()
+        baseline_reading_count = len(baseline_reading_list)
+
+        # create reading
+        new_reading_name = "test subject line"
+        new_reading_body = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+        new_reading_plan_id = str(uuid.uuid4())
+        new_reading_sent_date = datetime.datetime.now().isoformat()
+        new_reading_sent_count = "1"
+        response = reading.create_reading(new_reading_name, new_reading_body, new_reading_plan_id, new_reading_sent_date, new_reading_sent_count)
+        uid = response["Item"]["uid"]
+        self.assertEqual(response["ResponseMetadata"]["HTTPStatusCode"], 200)
+        updated_reading_count = len(reading.list_readings())
+        self.assertEqual(updated_reading_count, baseline_reading_count+1)
+        print(f"created reading with uid={uid}")
+
+        # get reading
+        response = reading.get_reading(uid)
+        self.assertEqual(uid, response[0]["uid"]["S"])
+
+        # get reading with name
+        response = reading.get_reading_with_description(new_reading_name)
+        print(json.dumps(response))
+        self.assertEqual(new_reading_name, response[0]["description"]["S"])
+
+        # delete reading
+        response = reading.delete_reading(uid)
+        updated_reading_count = len(reading.list_readings())
+        self.assertEqual(updated_reading_count, baseline_reading_count)
+        print(f"deleted reading with uid={uid}")
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     suite.addTest(Tests("test_group"))
     suite.addTest(Tests("test_user"))
     suite.addTest(Tests("test_plan"))
+    suite.addTest(Tests("test_reading"))
     runner = unittest.TextTestRunner()
     runner.run(suite)
