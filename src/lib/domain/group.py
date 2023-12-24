@@ -25,7 +25,7 @@ class Group:
             "uid": uid
         }
         return response
-    
+
     def delete_group(self, uid):
         response = self.port.delete_group(uid)
         return response
