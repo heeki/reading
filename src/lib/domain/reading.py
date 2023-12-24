@@ -26,6 +26,10 @@ class Reading:
         }
         return response
 
+    def update_reading(self, uid, description, body, plan_id, sent_date, sent_count):
+        response = self.port.update_reading(uid, description, body, plan_id, sent_date, sent_count)
+        return response
+
     def delete_reading(self, uid):
         response = self.port.delete_reading(uid)
         return response

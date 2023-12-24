@@ -84,6 +84,7 @@ class Tests(unittest.TestCase):
         updated_user_email = "updated@example.com"
         response = user.update_user(uid, updated_user_name, updated_user_email)
         self.assertEqual(updated_user_name, response["Attributes"]["description"]["S"])
+        self.assertEqual(updated_user_email, response["Attributes"]["email"]["S"])
         print(f"updated user with uid={uid}, base_count={baseline_user_count}, updated_count={updated_user_count}")
 
         # delete user
@@ -134,9 +135,10 @@ class Tests(unittest.TestCase):
         reading = Reading()
         baseline_reading_list = reading.list_readings()
         baseline_reading_count = len(baseline_reading_list)
+        print()
 
         # create reading
-        new_reading_name = "test subject line"
+        new_reading_name = "test"
         new_reading_body = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
         new_reading_plan_id = str(uuid.uuid4())
         new_reading_sent_date = datetime.datetime.now().isoformat()
@@ -156,6 +158,20 @@ class Tests(unittest.TestCase):
         response = reading.get_reading_with_description(new_reading_name)
         print(json.dumps(response))
         self.assertEqual(new_reading_name, response[0]["description"]["S"])
+
+        # update reading
+        updated_reading_name = "updated"
+        updated_reading_body = "Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem."
+        updated_reading_plan_id = str(uuid.uuid4())
+        updated_reading_sent_date = datetime.datetime.now().isoformat()
+        updated_reading_sent_count = "1"
+        response = reading.update_reading(uid, updated_reading_name, updated_reading_body, updated_reading_plan_id, updated_reading_sent_date, updated_reading_sent_count)
+        self.assertEqual(updated_reading_name, response["Attributes"]["description"]["S"])
+        self.assertEqual(updated_reading_body, response["Attributes"]["body"]["S"])
+        self.assertEqual(updated_reading_plan_id, response["Attributes"]["plan_id"]["S"])
+        self.assertEqual(updated_reading_sent_date, response["Attributes"]["sent_date"]["S"])
+        self.assertEqual(updated_reading_sent_count, response["Attributes"]["sent_count"]["N"])
+        print(f"updated reading with uid={uid}, base_count={baseline_reading_count}, updated_count={updated_reading_count}")
 
         # delete reading
         response = reading.delete_reading(uid)

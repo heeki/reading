@@ -55,6 +55,31 @@ class ReadingPort:
         response = self.client.put(item)
         return response
 
+    def update_reading(self, uid, description, body, plan_id, sent_date, sent_count):
+        item_key = {
+            "category": {"S": "reading"},
+            "uid": {"S": uid}
+        }
+        response = self.client.update(
+            item_key,
+            update_expression="SET #description = :description, #body = :body, #plan_id = :plan_id, #sent_date = :sent_date, #sent_count = :sent_count",
+            expression_names={
+                "#description": "description",
+                "#body": "body",
+                "#plan_id": "plan_id",
+                "#sent_date": "sent_date",
+                "#sent_count": "sent_count"
+            },
+            expression_attributes={
+                ":description": {"S": description},
+                ":body": {"S": body},
+                ":plan_id": {"S": plan_id},
+                ":sent_date": {"S": sent_date},
+                ":sent_count": {"N": sent_count}
+            }
+        )
+        return response
+
     def delete_reading(self, uid):
         item_key = {
             "category": {"S": "reading"},
