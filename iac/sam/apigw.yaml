@@ -51,7 +51,7 @@ Resources:
             - AttributeName: description
               KeyType: RANGE
           Projection:
-            ProjectionType: KEYS_ONLY
+            ProjectionType: ALL
   # APIGW
   Api:
     Type: AWS::Serverless::Api
