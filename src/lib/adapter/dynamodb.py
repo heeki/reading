@@ -2,7 +2,7 @@ import boto3
 import botocore
 import json
 
-class AdptDynamoDB:
+class DynamoDBAdapter:
     def __init__(self, table, lsi=None):
         self.session = boto3.session.Session()
         self.client = self.session.client("dynamodb")

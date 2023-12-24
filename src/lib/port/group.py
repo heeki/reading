@@ -1,12 +1,12 @@
 import boto3
 import json
 import os
-from lib.adapter.dynamodb import AdptDynamoDB
+from lib.adapter.dynamodb import DynamoDBAdapter
 
 class GroupPort:
     def __init__(self):
         self.table = os.environ.get("TABLE")
-        self.client = AdptDynamoDB(self.table)
+        self.client = DynamoDBAdapter(self.table)
 
     def list_groups(self):
         response = self.client.query(
