@@ -1,7 +1,9 @@
 import datetime
 import json
+import time
 import unittest
 import uuid
+from lib.encoders import DateTimeEncoder
 from lib.domain.group import Group
 from lib.domain.user import User
 from lib.domain.plan import Plan
@@ -27,7 +29,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(response["ResponseMetadata"]["HTTPStatusCode"], 200)
         updated_group_count = len(group.list_groups())
         self.assertEqual(updated_group_count, baseline_group_count+1)
-        print(f"created group with uid={uid}")
+        print(f"created group with uid={uid}, base_count={baseline_group_count}, updated_count={updated_group_count}")
 
         # get group
         response = group.get_group(uid)
@@ -38,11 +40,18 @@ class Tests(unittest.TestCase):
         print(json.dumps(response))
         self.assertEqual(new_group_name, response[0]["description"]["S"])
 
+        # update group
+        updated_group_name = "testing update"
+        response = group.update_group(uid, updated_group_name)
+        # print(json.dumps(response, cls=DateTimeEncoder))
+        self.assertEqual(updated_group_name, response["Attributes"]["description"]["S"])
+        print(f"updated group with uid={uid}, base_count={baseline_group_count}, updated_count={updated_group_count}")
+
         # delete group
         response = group.delete_group(uid)
         updated_group_count = len(group.list_groups())
         self.assertEqual(updated_group_count, baseline_group_count)
-        print(f"deleted group with uid={uid}")
+        print(f"deleted group with uid={uid}, base_count={baseline_group_count}, updated_count={updated_group_count}")
 
     def test_user(self):
         # baseline
