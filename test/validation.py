@@ -21,9 +21,10 @@ class Tests(unittest.TestCase):
         group = Group()
         baseline_group_list = group.list_groups()
         baseline_group_count = len(baseline_group_list)
+        print()
 
         # create group
-        new_group_name = "testing"
+        new_group_name = "test group"
         response = group.create_group(new_group_name)
         uid = response["Item"]["uid"]
         self.assertEqual(response["ResponseMetadata"]["HTTPStatusCode"], 200)
@@ -41,17 +42,17 @@ class Tests(unittest.TestCase):
         self.assertEqual(new_group_name, response[0]["description"]["S"])
 
         # update group
-        updated_group_name = "testing update"
+        updated_group_name = "updated group"
         response = group.update_group(uid, updated_group_name)
         # print(json.dumps(response, cls=DateTimeEncoder))
         self.assertEqual(updated_group_name, response["Attributes"]["description"]["S"])
-        print(f"updated group with uid={uid}, base_count={baseline_group_count}, updated_count={updated_group_count}")
+        print(f"updated group with uid={uid}")
 
         # delete group
         response = group.delete_group(uid)
         updated_group_count = len(group.list_groups())
         self.assertEqual(updated_group_count, baseline_group_count)
-        print(f"deleted group with uid={uid}, base_count={baseline_group_count}, updated_count={updated_group_count}")
+        print(f"deleted group with uid={uid}, base_count={baseline_group_count}, final_count={updated_group_count}")
 
     def test_user(self):
         # baseline
@@ -61,14 +62,14 @@ class Tests(unittest.TestCase):
         print()
 
         # create user
-        new_user_name = "test"
+        new_user_name = "test user"
         new_user_email = "test@example.com"
         response = user.create_user(new_user_name, new_user_email)
         uid = response["Item"]["uid"]
         self.assertEqual(response["ResponseMetadata"]["HTTPStatusCode"], 200)
         updated_user_count = len(user.list_users())
         self.assertEqual(updated_user_count, baseline_user_count+1)
-        print(f"created user with uid={uid}")
+        print(f"created user with uid={uid}, base_count={baseline_user_count}, updated_count={updated_user_count}")
 
         # get user
         response = user.get_user(uid)
@@ -80,18 +81,18 @@ class Tests(unittest.TestCase):
         self.assertEqual(new_user_name, response[0]["description"]["S"])
 
         # update user
-        updated_user_name = "updated"
+        updated_user_name = "updated user"
         updated_user_email = "updated@example.com"
         response = user.update_user(uid, updated_user_name, updated_user_email)
         self.assertEqual(updated_user_name, response["Attributes"]["description"]["S"])
         self.assertEqual(updated_user_email, response["Attributes"]["email"]["S"])
-        print(f"updated user with uid={uid}, base_count={baseline_user_count}, updated_count={updated_user_count}")
+        print(f"updated user with uid={uid}")
 
         # delete user
         response = user.delete_user(uid)
         updated_user_count = len(user.list_users())
         self.assertEqual(updated_user_count, baseline_user_count)
-        print(f"deleted user with uid={uid}")
+        print(f"deleted user with uid={uid}, base_count={baseline_user_count}, final_count={updated_user_count}")
 
     def test_plan(self):
         # baseline
@@ -101,13 +102,13 @@ class Tests(unittest.TestCase):
         print()
 
         # create plan
-        new_plan_name = "test"
+        new_plan_name = "test plan"
         response = plan.create_plan(new_plan_name)
         uid = response["Item"]["uid"]
         self.assertEqual(response["ResponseMetadata"]["HTTPStatusCode"], 200)
         updated_plan_count = len(plan.list_plans())
         self.assertEqual(updated_plan_count, baseline_plan_count+1)
-        print(f"created plan with uid={uid}")
+        print(f"created plan with uid={uid}, base_count={baseline_plan_count}, updated_count={updated_plan_count}")
 
         # get plan
         response = plan.get_plan(uid)
@@ -119,16 +120,16 @@ class Tests(unittest.TestCase):
         self.assertEqual(new_plan_name, response[0]["description"]["S"])
 
         # update plan
-        updated_plan_name = "updated"
+        updated_plan_name = "updated plan"
         response = plan.update_plan(uid, updated_plan_name)
         self.assertEqual(updated_plan_name, response["Attributes"]["description"]["S"])
-        print(f"updated plan with uid={uid}, base_count={baseline_plan_count}, updated_count={updated_plan_count}")
+        print(f"updated plan with uid={uid}")
 
         # delete plan
         response = plan.delete_plan(uid)
         updated_plan_count = len(plan.list_plans())
         self.assertEqual(updated_plan_count, baseline_plan_count)
-        print(f"deleted plan with uid={uid}")
+        print(f"deleted plan with uid={uid}, base_count={baseline_plan_count}, final_count={updated_plan_count}")
 
     def test_reading(self):
         # baseline
@@ -138,7 +139,7 @@ class Tests(unittest.TestCase):
         print()
 
         # create reading
-        new_reading_name = "test"
+        new_reading_name = "test reading"
         new_reading_body = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
         new_reading_plan_id = str(uuid.uuid4())
         new_reading_sent_date = datetime.datetime.now().isoformat()
@@ -148,7 +149,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(response["ResponseMetadata"]["HTTPStatusCode"], 200)
         updated_reading_count = len(reading.list_readings())
         self.assertEqual(updated_reading_count, baseline_reading_count+1)
-        print(f"created reading with uid={uid}")
+        print(f"created reading with uid={uid}, base_count={baseline_reading_count}, updated_count={updated_reading_count}")
 
         # get reading
         response = reading.get_reading(uid)
@@ -160,7 +161,7 @@ class Tests(unittest.TestCase):
         self.assertEqual(new_reading_name, response[0]["description"]["S"])
 
         # update reading
-        updated_reading_name = "updated"
+        updated_reading_name = "updated reading"
         updated_reading_body = "Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem."
         updated_reading_plan_id = str(uuid.uuid4())
         updated_reading_sent_date = datetime.datetime.now().isoformat()
@@ -171,13 +172,13 @@ class Tests(unittest.TestCase):
         self.assertEqual(updated_reading_plan_id, response["Attributes"]["plan_id"]["S"])
         self.assertEqual(updated_reading_sent_date, response["Attributes"]["sent_date"]["S"])
         self.assertEqual(updated_reading_sent_count, response["Attributes"]["sent_count"]["N"])
-        print(f"updated reading with uid={uid}, base_count={baseline_reading_count}, updated_count={updated_reading_count}")
+        print(f"updated reading with uid={uid}")
 
         # delete reading
         response = reading.delete_reading(uid)
         updated_reading_count = len(reading.list_readings())
         self.assertEqual(updated_reading_count, baseline_reading_count)
-        print(f"deleted reading with uid={uid}")
+        print(f"deleted reading with uid={uid}, base_count={baseline_reading_count}, final_count={updated_reading_count}")
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
