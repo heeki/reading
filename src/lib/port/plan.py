@@ -52,6 +52,25 @@ class PlanPort:
         response = self.client.put(item)
         return response
 
+    def update_plan(self, uid, description, is_private=False):
+        item_key = {
+            "category": {"S": "plan"},
+            "uid": {"S": uid}
+        }
+        response = self.client.update(
+            item_key,
+            update_expression="SET #description = :description, #is_private = :is_private",
+            expression_names={
+                "#description": "description",
+                "#is_private": "is_private"
+            },
+            expression_attributes={
+                ":description": {"S": description},
+                ":is_private": {"BOOL": is_private}
+            }
+        )
+        return response
+
     def delete_plan(self, uid):
         item_key = {
             "category": {"S": "plan"},

@@ -18,12 +18,16 @@ class Plan:
         response = self.port.get_plan_with_description(description)
         return response
 
-    def create_plan(self, name):
+    def create_plan(self, name, is_private=False):
         uid = str(uuid.uuid4())
-        response = self.port.create_plan(uid, name)
+        response = self.port.create_plan(uid, name, is_private)
         response["Item"] = {
             "uid": uid
         }
+        return response
+
+    def update_plan(self, uid, description, is_private=False):
+        response = self.port.update_plan(uid, description, is_private)
         return response
 
     def delete_plan(self, uid):

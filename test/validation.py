@@ -97,9 +97,10 @@ class Tests(unittest.TestCase):
         plan = Plan()
         baseline_plan_list = plan.list_plans()
         baseline_plan_count = len(baseline_plan_list)
+        print()
 
         # create plan
-        new_plan_name = "testing"
+        new_plan_name = "test"
         response = plan.create_plan(new_plan_name)
         uid = response["Item"]["uid"]
         self.assertEqual(response["ResponseMetadata"]["HTTPStatusCode"], 200)
@@ -115,6 +116,12 @@ class Tests(unittest.TestCase):
         response = plan.get_plan_with_description(new_plan_name)
         print(json.dumps(response))
         self.assertEqual(new_plan_name, response[0]["description"]["S"])
+
+        # update plan
+        updated_plan_name = "updated"
+        response = plan.update_plan(uid, updated_plan_name)
+        self.assertEqual(updated_plan_name, response["Attributes"]["description"]["S"])
+        print(f"updated plan with uid={uid}, base_count={baseline_plan_count}, updated_count={updated_plan_count}")
 
         # delete plan
         response = plan.delete_plan(uid)
