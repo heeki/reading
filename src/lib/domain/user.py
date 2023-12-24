@@ -26,6 +26,10 @@ class User:
         }
         return response
 
+    def update_user(self, uid, description, email):
+        response = self.port.update_user(uid, description, email)
+        return response
+
     def delete_user(self, uid):
         response = self.port.delete_user(uid)
         return response

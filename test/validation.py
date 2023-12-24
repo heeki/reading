@@ -58,6 +58,7 @@ class Tests(unittest.TestCase):
         user = User()
         baseline_user_list = user.list_users()
         baseline_user_count = len(baseline_user_list)
+        print()
 
         # create user
         new_user_name = "test"
@@ -77,6 +78,13 @@ class Tests(unittest.TestCase):
         response = user.get_user_with_description(new_user_name)
         print(json.dumps(response))
         self.assertEqual(new_user_name, response[0]["description"]["S"])
+
+        # update user
+        updated_user_name = "updated"
+        updated_user_email = "updated@example.com"
+        response = user.update_user(uid, updated_user_name, updated_user_email)
+        self.assertEqual(updated_user_name, response["Attributes"]["description"]["S"])
+        print(f"updated user with uid={uid}, base_count={baseline_user_count}, updated_count={updated_user_count}")
 
         # delete user
         response = user.delete_user(uid)

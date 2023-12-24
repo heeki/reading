@@ -52,6 +52,25 @@ class UserPort:
         response = self.client.put(item)
         return response
 
+    def update_user(self, uid, description, email):
+        item_key = {
+            "category": {"S": "user"},
+            "uid": {"S": uid}
+        }
+        response = self.client.update(
+            item_key,
+            update_expression="SET #description = :description, #email = :email",
+            expression_names={
+                "#description": "description",
+                "#email": "email"
+            },
+            expression_attributes={
+                ":description": {"S": description},
+                ":email": {"S": email}
+            }
+        )
+        return response
+
     def delete_user(self, uid):
         item_key = {
             "category": {"S": "user"},
