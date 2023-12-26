@@ -7,8 +7,12 @@ infrastructure.package:
 infrastructure.deploy:
 	sam deploy --profile ${PROFILE} -t ${INFRASTRUCTURE_OUTPUT} --stack-name ${INFRASTRUCTURE_STACK} --parameter-overrides ${INFRASTRUCTURE_PARAMS} --capabilities CAPABILITY_NAMED_IAM
 
+# libraries as layer
+layer:
+	mkdir -p tmp/libraries/python && rsync -av --delete src/lib --exclude __pycache__ tmp/libraries/python
+
 # api gateway
-apigw: apigw.package apigw.deploy
+apigw: layer apigw.package apigw.deploy
 apigw.package:
 	sam package -t ${APIGW_TEMPLATE} --output-template-file ${APIGW_OUTPUT} --s3-bucket ${BUCKET} --s3-prefix ${APIGW_STACK}
 apigw.deploy:
@@ -23,7 +27,7 @@ sam.local.api.build:
 	sam build --profile ${PROFILE} --template ${APIGW_TEMPLATE} --parameter-overrides ${APIGW_PARAMS} --build-dir build --manifest requirements.txt --use-container
 	sam local start-api -t build/template.yaml --parameter-overrides ${APIGW_PARAMS} --env-vars etc/envvars.json
 sam.local.invoke:
-	sam local invoke -t ${APIGW_TEMPLATE} --parameter-overrides ${APIGW_PARAMS} --env-vars etc/envvars.json -e etc/event.json Fn | jq
+	sam local invoke -t ${APIGW_TEMPLATE} --parameter-overrides ${APIGW_PARAMS} --env-vars etc/envvars.json -e etc/event.json ${P_FN_LOCAL} | jq -r '.body' | jq
 
 # testing deployed resources
 lambda.invoke.sync:
@@ -38,9 +42,16 @@ validation:
 	PYTHONPATH=src python3 test/validation.py
 
 # testing endpoints
-curl.user:
-	curl -s -XGET ${O_CUSTOM_ENDPOINT}/user | jq 'del(.multiValueHeaders)'
 curl.group:
+	$(eval UID=$(shell curl -s -XPOST -d @etc/group_post.json ${O_CUSTOM_ENDPOINT}/group | jq -r .uid))
+	curl -s -XGET ${O_CUSTOM_ENDPOINT}/group | jq .[] -c
+	curl -s -XGET ${O_CUSTOM_ENDPOINT}/group/${UID} | jq .
+	curl -s -XPUT -d @etc/group_put.json ${O_CUSTOM_ENDPOINT}/group/${UID} | jq
+	curl -s -XDELETE ${O_CUSTOM_ENDPOINT}/group/${UID} | jq
+	curl -s -XGET ${O_CUSTOM_ENDPOINT}/group | jq .[] -c
+curl.user:
+	curl -s -XGET ${O_CUSTOM_ENDPOINT}/user | jq  .[] -c
+curl.base:
 	curl -s -XGET ${O_CUSTOM_ENDPOINT}/group | jq 'del(.multiValueHeaders)'
 
 # cdk alternate

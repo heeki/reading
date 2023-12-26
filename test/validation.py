@@ -26,26 +26,26 @@ class Tests(unittest.TestCase):
         # create group
         new_group_name = "test group"
         response = group.create_group(new_group_name)
-        uid = response["Item"]["uid"]
-        self.assertEqual(response["ResponseMetadata"]["HTTPStatusCode"], 200)
+        uid = response["uid"]
+        self.assertIsNotNone(uid)
         updated_group_count = len(group.list_groups())
         self.assertEqual(updated_group_count, baseline_group_count+1)
         print(f"created group with uid={uid}, base_count={baseline_group_count}, updated_count={updated_group_count}")
 
         # get group
         response = group.get_group(uid)
-        self.assertEqual(uid, response[0]["uid"]["S"])
+        self.assertEqual(uid, response["uid"])
 
         # get group with name
         response = group.get_group_with_description(new_group_name)
         print(json.dumps(response))
-        self.assertEqual(new_group_name, response[0]["description"]["S"])
+        self.assertEqual(new_group_name, response["description"])
 
         # update group
         updated_group_name = "updated group"
         response = group.update_group(uid, updated_group_name)
         # print(json.dumps(response, cls=DateTimeEncoder))
-        self.assertEqual(updated_group_name, response["Attributes"]["description"]["S"])
+        self.assertEqual(updated_group_name, response["description"])
         print(f"updated group with uid={uid}")
 
         # delete group

@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: reading-api
-  description: Base template for API Gateway endpoints
+  description: Readig application API endpoint
   version: 0.1.0
   license:
     name: Apache 2.0
@@ -20,10 +20,15 @@ components:
     group:
       type: object
       properties:
-        id:
+        uid:
           type: string
-        name:
+          required: false
+        description:
           type: string
+          required: true
+        is_private:
+          type: boolean
+          required: true
     user:
       type: object
       properties:
@@ -35,10 +40,6 @@ components:
           type: string
         group:
           type: string
-    users:
-      type: array
-      items:
-        $ref: "#/components/schemas/user"
     uid:
       type: object
       properties:
@@ -56,6 +57,81 @@ components:
             message: "unable to retrieve message"
 
 paths:
+  /group:
+    get:
+      summary: group
+      description: returns list of groups
+      x-amazon-apigateway-integration:
+        httpMethod: POST
+        type: AWS_PROXY
+        uri:
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${FnGroup}/invocations"
+    post:
+      summary: group
+      description: creates group
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/group"
+        required: true
+      x-amazon-apigateway-request-validator: body
+      x-amazon-apigateway-integration:
+        httpMethod: POST
+        type: AWS_PROXY
+        uri:
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${FnGroup}/invocations"
+  /group/{proxy+}:
+    get:
+      summary: group
+      description: returns details of a group
+      parameters:
+        - in: path
+          name: uid
+          required: true
+          schema:
+            type: string
+          description: uid
+      x-amazon-apigateway-integration:
+        httpMethod: POST
+        type: AWS_PROXY
+        uri:
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${FnGroup}/invocations"
+    put:
+      summary: group
+      description: updates a group
+      parameters:
+        - in: path
+          name: uid
+          required: true
+          schema:
+            type: string
+          description: uid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/group"
+      x-amazon-apigateway-integration:
+        httpMethod: POST
+        type: AWS_PROXY
+        uri:
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${FnGroup}/invocations"
+    delete:
+      summary: group
+      description: deletes a group
+      parameters:
+        - in: path
+          name: uid
+          required: true
+          schema:
+            type: string
+          description: uid
+      x-amazon-apigateway-integration:
+        httpMethod: POST
+        type: AWS_PROXY
+        uri:
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${FnGroup}/invocations"
   /user:
     get:
       summary: user
@@ -73,7 +149,6 @@ paths:
           $ref: "#/components/responses/error"
       x-amazon-apigateway-integration:
         httpMethod: POST
-        payloadFormatVersion: "1.0"
         type: AWS_PROXY
         uri:
           Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${FnUser}/invocations"
@@ -98,53 +173,14 @@ paths:
           $ref: "#/components/responses/error"
       x-amazon-apigateway-integration:
         httpMethod: POST
-        payloadFormatVersion: "1.0"
         type: AWS_PROXY
         uri:
           Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${FnGroup}/invocations"
-  /group:
-    get:
-      summary: group
-      description: returns list of groups
-      responses:
-        200:
-          description: ok
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/group"
-        500:
-          $ref: "#/components/responses/error"
-        default:
-          $ref: "#/components/responses/error"
-      x-amazon-apigateway-integration:
-        httpMethod: POST
-        payloadFormatVersion: "1.0"
-        type: AWS_PROXY
-        uri:
-          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${FnGroup}/invocations"
-    post:
-      summary: group
-      description: create group
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/group"
-      responses:
-        200:
-          description: ok
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/group"
-        500:
-          $ref: "#/components/responses/error"
-        default:
-          $ref: "#/components/responses/error"
-      x-amazon-apigateway-integration:
-        httpMethod: POST
-        payloadFormatVersion: "1.0"
-        type: AWS_PROXY
-        uri:
-          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${FnGroup}/invocations"
+
+x-amazon-apigateway-request-validators:
+  body:
+    validateRequestBody: true
+    validateRequestParameters: false
+  param:
+    validateRequestBody: false
+    validateRequestParameters: true

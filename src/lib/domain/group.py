@@ -21,9 +21,6 @@ class Group:
     def create_group(self, description, is_private=False):
         uid = str(uuid.uuid4())
         response = self.port.create_group(uid, description, is_private)
-        response["Item"] = {
-            "uid": uid
-        }
         return response
 
     def update_group(self, uid, description, is_private=False):

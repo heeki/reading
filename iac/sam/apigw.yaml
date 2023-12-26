@@ -81,6 +81,15 @@ Resources:
     DependsOn:
       - ApiStage
   # Lambda
+  LayerLibraries:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      CompatibleRuntimes:
+        - python3.9
+        - python3.10
+        - python3.11
+      ContentUri: ../../tmp/libraries
+      LayerName: reading-libraries
   FnRole:
     Type: AWS::IAM::Role
     Properties:
@@ -146,6 +155,11 @@ Resources:
       CodeUri: ../../src/group
       Handler: fn.handler
       Role: !GetAtt FnRole.Arn
+      Environment:
+        Variables:
+          TABLE: !Ref Table
+      Layers:
+        - !Ref LayerLibraries
       Tags:
         application:group: reading
         application:subgroup: group
@@ -195,3 +209,5 @@ Outputs:
     Value: !Ref FnUser
   outTableArn:
     Value: !GetAtt Table.Arn
+  outLayerLibraries:
+    Value: !Ref LayerLibraries

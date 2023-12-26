@@ -23,4 +23,5 @@ O_API_ENDPOINT=output-api-endpoint
 O_CUSTOM_ENDPOINT=https://your.custom.domain.com/reading
 O_TABLE_ARN=output-table-arn
 
+P_FN_LOCAL=FnGroup
 export TABLE=table-name
