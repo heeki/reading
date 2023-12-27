@@ -42,7 +42,8 @@ validation:
 	PYTHONPATH=src python3 test/validation.py
 
 # testing endpoints
-curl.base:
+test: test.group test.user test.plan test.reading
+test.base:
 	curl -s -XGET ${O_CUSTOM_ENDPOINT}/group | jq 'del(.multiValueHeaders)'
 test.group:
 	$(eval UID=$(shell curl -s -XPOST -H "content-type: application/json" -d @etc/group_post.json ${O_CUSTOM_ENDPOINT}/group | jq -r .uid))
