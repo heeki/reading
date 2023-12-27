@@ -1,12 +1,42 @@
-import boto3
 import json
 import os
+from botocore.exceptions import ClientError
 from lib.adapter.dynamodb import DynamoDBAdapter
 
 class ReadingPort:
     def __init__(self):
         self.table = os.environ.get("TABLE")
         self.client = DynamoDBAdapter(self.table)
+
+    def _transform(self, item):
+        output = {
+            "category": item["category"]["S"],
+            "uid": item["uid"]["S"],
+            "description": item["description"]["S"],
+            "plan_id": item["plan_id"]["S"],
+            "sent_date": item["sent_date"]["S"],
+            "sent_count": item["sent_count"]["N"]
+        }
+        if "body" in item:
+            output["body"] = item["body"]["S"]
+        return output
+
+    def transform(self, item):
+        match item:
+            case list():
+                output = [self._transform(i) for i in item]
+            case _:
+                if "Attributes" in item:
+                    output = self._transform(item["Attributes"])
+                elif "ResponseMetadata" in item:
+                    output = {
+                        "ResponseMetadata": {
+                            "HTTPStatusCode": item["ResponseMetadata"]["HTTPStatusCode"]
+                        }
+                    }
+                else:
+                    output = self._transform(item)
+        return output
 
     def list_readings(self):
         response = self.client.query(
@@ -16,7 +46,8 @@ class ReadingPort:
             },
             projection_expression = "category, uid, description, plan_id, sent_date, sent_count"
         )
-        return response
+        output = self.transform(response)
+        return output
 
     def get_reading(self, uid):
         response = self.client.query(
@@ -27,7 +58,9 @@ class ReadingPort:
             },
             projection_expression = "category, uid, description, body, plan_id, sent_date, sent_count"
         )
-        return response
+        transformed = self.transform(response)
+        output = transformed[0] if len(transformed) > 0 else {}
+        return output
 
     def get_reading_with_description(self, description):
         self.client.set_lsi("description")
@@ -40,7 +73,9 @@ class ReadingPort:
             projection_expression = "category, uid, description, body, plan_id, sent_date, sent_count"
         )
         self.client.reset_lsi()
-        return response
+        transformed = self.transform(response)
+        output = transformed[0] if len(transformed) > 0 else {}
+        return output
 
     def create_reading(self, uid, description, body, plan_id, sent_date, sent_count):
         item = {
@@ -53,32 +88,43 @@ class ReadingPort:
             "sent_count": {"N": sent_count}
         }
         response = self.client.put(item)
-        return response
+        output = {"uid": uid} if response["ResponseMetadata"]["HTTPStatusCode"] == 200 else {}
+        return output
 
     def update_reading(self, uid, description, body, plan_id, sent_date, sent_count):
         item_key = {
             "category": {"S": "reading"},
             "uid": {"S": uid}
         }
-        response = self.client.update(
-            item_key,
-            update_expression="SET #description = :description, #body = :body, #plan_id = :plan_id, #sent_date = :sent_date, #sent_count = :sent_count",
-            expression_names={
-                "#description": "description",
-                "#body": "body",
-                "#plan_id": "plan_id",
-                "#sent_date": "sent_date",
-                "#sent_count": "sent_count"
-            },
-            expression_attributes={
-                ":description": {"S": description},
-                ":body": {"S": body},
-                ":plan_id": {"S": plan_id},
-                ":sent_date": {"S": sent_date},
-                ":sent_count": {"N": sent_count}
+        try:
+            response = self.client.update(
+                item_key,
+                update_expression="SET #description = :description, #body = :body, #plan_id = :plan_id, #sent_date = :sent_date, #sent_count = :sent_count",
+                condition_expression="#uid = :uid",
+                expression_names = {
+                    "#uid": "uid",
+                    "#description": "description",
+                    "#body": "body",
+                    "#plan_id": "plan_id",
+                    "#sent_date": "sent_date",
+                    "#sent_count": "sent_count"
+                },
+                expression_attributes = {
+                    ":uid": {"S": uid},
+                    ":description": {"S": description},
+                    ":body": {"S": body},
+                    ":plan_id": {"S": plan_id},
+                    ":sent_date": {"S": sent_date},
+                    ":sent_count": {"N": sent_count}
+                }
+            )
+            output = self.transform(response)
+        except ClientError as e:
+            output = {
+                "error": e.response["Error"]["Code"],
+                "message": "requested uid not found"
             }
-        )
-        return response
+        return output
 
     def delete_reading(self, uid):
         item_key = {
@@ -86,4 +132,5 @@ class ReadingPort:
             "uid": {"S": uid}
         }
         response = self.client.delete(item_key)
-        return response
+        output = {"uid": uid} if "Attributes" in response else {}
+        return output

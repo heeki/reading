@@ -9,6 +9,7 @@ etc/*.json
 !etc/group_*.json
 !etc/user_*.json
 !etc/plan_*.json
+!etc/reading_*.json
 *.pyc
 *.sh
 *_output.yaml

@@ -42,6 +42,8 @@ validation:
 	PYTHONPATH=src python3 test/validation.py
 
 # testing endpoints
+curl.base:
+	curl -s -XGET ${O_CUSTOM_ENDPOINT}/group | jq 'del(.multiValueHeaders)'
 test.group:
 	$(eval UID=$(shell curl -s -XPOST -H "content-type: application/json" -d @etc/group_post.json ${O_CUSTOM_ENDPOINT}/group | jq -r .uid))
 	curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/group | jq '.[]' -c
@@ -75,8 +77,17 @@ test.plan:
 	curl -s -XPOST -H "content-type: application/json" -d @etc/plan_invalid.json ${O_CUSTOM_ENDPOINT}/plan | jq
 	curl -s -XPUT -H "content-type: application/json" -d @etc/plan_put.json ${O_CUSTOM_ENDPOINT}/plan?uid=invalid | jq
 	curl -s -XDELETE -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/plan?uid=invalid | jq
-curl.base:
-	curl -s -XGET ${O_CUSTOM_ENDPOINT}/group | jq 'del(.multiValueHeaders)'
+test.reading:
+	$(eval UID=$(shell curl -s -XPOST -H "content-type: application/json" -d @etc/reading_post.json ${O_CUSTOM_ENDPOINT}/reading | jq -r .uid))
+	curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/reading | jq '.[]' -c
+	curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/reading?uid=${UID} | jq
+	curl -s -XPUT -H "content-type: application/json" -d @etc/reading_put.json ${O_CUSTOM_ENDPOINT}/reading?uid=${UID} | jq
+	curl -s -XDELETE -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/reading?uid=${UID} | jq
+	curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/reading | jq '.[]' -c
+	curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/reading?uid=invalid | jq
+	curl -s -XPOST -H "content-type: application/json" -d @etc/reading_invalid.json ${O_CUSTOM_ENDPOINT}/reading | jq
+	curl -s -XPUT -H "content-type: application/json" -d @etc/reading_put.json ${O_CUSTOM_ENDPOINT}/reading?uid=invalid | jq
+	curl -s -XDELETE -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/reading?uid=invalid | jq
 
 # cdk alternate
 cdk.synth:

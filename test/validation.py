@@ -198,6 +198,10 @@ class Tests(unittest.TestCase):
         response = reading.get_reading(uid)
         self.assertEqual(uid, response["uid"])
 
+        # get invalid reading
+        response = reading.get_reading(self.invalid_uid)
+        self.assertEqual({}, response)
+
         # get reading with name
         response = reading.get_reading_with_description(new_reading_name)
         print(json.dumps(response))
@@ -217,17 +221,26 @@ class Tests(unittest.TestCase):
         self.assertEqual(updated_reading_sent_count, response["sent_count"])
         print(f"updated reading with uid={uid}")
 
+        # update invalid reading
+        updated_reading_name = f"updated reading {self.test_id}"
+        response = reading.update_reading(self.invalid_uid, updated_reading_name, updated_reading_body, updated_reading_plan_id, updated_reading_sent_date, updated_reading_sent_count)
+        self.assertEqual("ConditionalCheckFailedException", response["error"])
+
         # delete reading
         response = reading.delete_reading(uid)
         updated_reading_count = len(reading.list_readings())
         self.assertEqual(updated_reading_count, baseline_reading_count)
         print(f"deleted reading with uid={uid}, base_count={baseline_reading_count}, final_count={updated_reading_count}")
 
+        # delete invalid reading
+        response = reading.delete_reading(self.invalid_uid)
+        self.assertEqual({}, response)
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     suite.addTest(Tests("test_group"))
     suite.addTest(Tests("test_user"))
     suite.addTest(Tests("test_plan"))
-    # suite.addTest(Tests("test_reading"))
+    suite.addTest(Tests("test_reading"))
     runner = unittest.TextTestRunner()
     runner.run(suite)

@@ -17,6 +17,11 @@ components:
           format: int32
         message:
           type: string
+    uid:
+      type: string
+      # pattern: "^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$"
+      # minLength: 36
+      # maxLength: 36
     group:
       type: object
       properties:
@@ -45,7 +50,7 @@ components:
         email:
           type: string
           minLength: 6
-        group:
+        group_id:
           $ref: "#/components/schemas/uid"
       required:
         - description
@@ -71,12 +76,50 @@ components:
       type: array
       items:
         $ref: "#/components/schemas/plan"
-    uid:
-      type: string
-      # pattern: "^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$"
-      # minLength: 36
-      # maxLength: 36
+    reading:
+      type: object
+      properties:
+        uid:
+          $ref: "#/components/schemas/uid"
+        description:
+          type: string
+          minLength: 2
+        body:
+          type: string
+        plan_id:
+          $ref: "#/components/schemas/uid"
+        sent_date:
+          type: string
+        sent_count:
+          type: integer
+      required:
+        - description
+        - body
+        - plan_id
+        - sent_date
+        - sent_count
+    readings:
+      type: array
+      items:
+        $ref: "#/components/schemas/reading"
   responses:
+    error:
+      description: internal server error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/error"
+          example:
+            code: 500
+            message: "internal server error"
+    uid:
+      description: ok
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/uid"
+          example:
+            uid: "7f42847e-db7c-4c16-b390-a1e7f4448919"
     group:
       description: ok
       content:
@@ -84,7 +127,6 @@ components:
           schema:
             $ref: "#/components/schemas/group"
           example:
-            category: "group"
             uid: "e5512fda-c5ec-4485-84ac-2592cd09a985"
             description: "example group"
             is_private: false
@@ -101,7 +143,6 @@ components:
           schema:
             $ref: "#/components/schemas/user"
           example:
-            category: "user"
             uid: "432b5bcd-ce1f-48fa-b8f8-b78bc4716178"
             description: "example user"
             email: user@example.com
@@ -118,7 +159,6 @@ components:
           schema:
             $ref: "#/components/schemas/plan"
           example:
-            category: "plan"
             uid: "dc35c5f4-5ef4-4399-b3bc-c0e4c5467e3e"
             description: "example plan"
             is_private: false
@@ -128,23 +168,25 @@ components:
         application/json:
           schema:
             $ref: "#/components/schemas/plans"
-    uid:
+    reading:
       description: ok
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/uid"
+            $ref: "#/components/schemas/reading"
           example:
-            uid: "7f42847e-db7c-4c16-b390-a1e7f4448919"
-    error:
-      description: internal server error
+            uid: "226ce991-dfa2-45f0-bf9f-369ab39c9c79"
+            description: "example reading"
+            body: "example text"
+            plan_id: "48b2f512-0a76-4bfc-90c8-7c9d7cf76205"
+            sent_date: "2023-12-27T17:22:16.870919"
+            sent_count: 1
+    readings:
+      description: ok
       content:
         application/json:
           schema:
-            $ref: "#/components/schemas/error"
-          example:
-            code: 500
-            message: "internal server error"
+            $ref: "#/components/schemas/readings"
 
 paths:
   /group:
@@ -432,6 +474,101 @@ paths:
         type: AWS_PROXY
         uri:
           Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${FnPlan}/invocations"
+  /reading:
+    get:
+      summary: reading
+      description: returns list of readings
+      parameters:
+        - in: query
+          name: uid
+          required: false
+          schema:
+            $ref: "#/components/schemas/uid"
+      responses:
+        200:
+          $ref: "#/components/responses/readings"
+        500:
+          $ref: "#/components/responses/error"
+        default:
+          $ref: "#/components/responses/error"
+      x-amazon-apigateway-request-validator: param
+      x-amazon-apigateway-integration:
+        httpMethod: POST
+        type: AWS_PROXY
+        uri:
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${FnReading}/invocations"
+    post:
+      summary: reading
+      description: creates reading
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/reading"
+      responses:
+        200:
+          $ref: "#/components/responses/uid"
+        500:
+          $ref: "#/components/responses/error"
+        default:
+          $ref: "#/components/responses/error"
+      x-amazon-apigateway-request-validator: body
+      x-amazon-apigateway-integration:
+        httpMethod: POST
+        type: AWS_PROXY
+        uri:
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${FnReading}/invocations"
+    put:
+      summary: reading
+      description: updates a reading
+      parameters:
+        - in: query
+          name: uid
+          required: true
+          schema:
+            $ref: "#/components/schemas/uid"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/reading"
+      responses:
+        200:
+          $ref: "#/components/responses/reading"
+        500:
+          $ref: "#/components/responses/error"
+        default:
+          $ref: "#/components/responses/error"
+      x-amazon-apigateway-request-validator: both
+      x-amazon-apigateway-integration:
+        httpMethod: POST
+        type: AWS_PROXY
+        uri:
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${FnReading}/invocations"
+    delete:
+      summary: reading
+      description: deletes a reading
+      parameters:
+        - in: query
+          name: uid
+          required: true
+          schema:
+            $ref: "#/components/schemas/uid"
+      responses:
+        200:
+          $ref: "#/components/responses/uid"
+        500:
+          $ref: "#/components/responses/error"
+        default:
+          $ref: "#/components/responses/error"
+      x-amazon-apigateway-request-validator: param
+      x-amazon-apigateway-integration:
+        httpMethod: POST
+        type: AWS_PROXY
+        uri:
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${FnReading}/invocations"
 
 x-amazon-apigateway-request-validators:
   both:

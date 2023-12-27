@@ -21,9 +21,6 @@ class Reading:
     def create_reading(self, description, body, plan_id, sent_date, sent_count):
         uid = str(uuid.uuid4())
         response = self.port.create_reading(uid, description, body, plan_id, sent_date, sent_count)
-        response["Item"] = {
-            "uid": uid
-        }
         return response
 
     def update_reading(self, uid, description, body, plan_id, sent_date, sent_count):

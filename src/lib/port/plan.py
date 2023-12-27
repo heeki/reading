@@ -95,12 +95,12 @@ class PlanPort:
                 item_key,
                 update_expression="SET #description = :description, #is_private = :is_private",
                 condition_expression="#uid = :uid",
-                expression_names={
+                expression_names = {
                     "#uid": "uid",
                     "#description": "description",
                     "#is_private": "is_private"
                 },
-                expression_attributes={
+                expression_attributes = {
                     ":uid": {"S": uid},
                     ":description": {"S": description},
                     ":is_private": {"BOOL": is_private}
