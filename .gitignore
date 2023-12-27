@@ -6,6 +6,7 @@ tmp
 
 # files
 etc/*.json
+!etc/group_*.json
 *.pyc
 *.sh
 *_output.yaml

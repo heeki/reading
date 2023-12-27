@@ -42,15 +42,17 @@ validation:
 	PYTHONPATH=src python3 test/validation.py
 
 # testing endpoints
-curl.group:
-	$(eval UID=$(shell curl -s -XPOST -d @etc/group_post.json ${O_CUSTOM_ENDPOINT}/group | jq -r .uid))
-	curl -s -XGET ${O_CUSTOM_ENDPOINT}/group | jq .[] -c
-	curl -s -XGET ${O_CUSTOM_ENDPOINT}/group/${UID} | jq .
-	curl -s -XPUT -d @etc/group_put.json ${O_CUSTOM_ENDPOINT}/group/${UID} | jq
-	curl -s -XDELETE ${O_CUSTOM_ENDPOINT}/group/${UID} | jq
-	curl -s -XGET ${O_CUSTOM_ENDPOINT}/group | jq .[] -c
-curl.user:
-	curl -s -XGET ${O_CUSTOM_ENDPOINT}/user | jq  .[] -c
+test.group:
+	$(eval UID=$(shell curl -s -XPOST -H "content-type: application/json" -d @etc/group_post.json ${O_CUSTOM_ENDPOINT}/group | jq -r .uid))
+	curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/group | jq '.[]' -c
+	curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/group?uid=${UID} | jq
+	curl -s -XPUT -H "content-type: application/json" -d @etc/group_put.json ${O_CUSTOM_ENDPOINT}/group?uid=${UID} | jq
+	curl -s -XDELETE -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/group?uid=${UID} | jq
+	curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/group | jq '.[]' -c
+	curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/group?uid=invalid | jq
+	curl -s -XPOST -H "content-type: application/json" -d @etc/group_invalid.json ${O_CUSTOM_ENDPOINT}/group | jq
+	curl -s -XPUT -H "content-type: application/json" -d @etc/group_put.json ${O_CUSTOM_ENDPOINT}/group?uid=invalid | jq
+	curl -s -XDELETE -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/group?uid=invalid | jq
 curl.base:
 	curl -s -XGET ${O_CUSTOM_ENDPOINT}/group | jq 'del(.multiValueHeaders)'
 

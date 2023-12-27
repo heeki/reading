@@ -1,6 +1,6 @@
 import boto3
-import botocore
 import json
+from botocore.exceptions import ClientError
 
 class DynamoDBAdapter:
     def __init__(self, table, lsi=None):
@@ -31,22 +31,23 @@ class DynamoDBAdapter:
                 TableName=self.table,
                 Item=item
             )
-        except botocore.exceptions.ClientError as e:
-            response = e
+        except ClientError as e:
+            raise e
         return response
 
-    def update(self, item_key, update_expression, expression_names, expression_attributes):
+    def update(self, item_key, update_expression, condition_expression, expression_names, expression_attributes):
         try:
             response = self.client.update_item(
                 TableName=self.table,
                 Key=item_key,
                 UpdateExpression=update_expression,
+                ConditionExpression=condition_expression,
                 ExpressionAttributeNames=expression_names,
                 ExpressionAttributeValues=expression_attributes,
                 ReturnValues="ALL_NEW"
             )
-        except botocore.exceptions.ClientError as e:
-            response = e
+        except ClientError as e:
+            raise e
         return response
 
     def increment(self, hkey, attr, incr=1):
@@ -64,8 +65,8 @@ class DynamoDBAdapter:
                 UpdateExpression="SET #attr = if_not_exists(#attr, :zero) + :increment",
                 ReturnValues="ALL_NEW"
             )
-        except botocore.exceptions.ClientError as e:
-            response = e
+        except ClientError as e:
+            raise e
         return response
 
     def scan(self):

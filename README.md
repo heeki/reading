@@ -40,3 +40,14 @@ Test the deployed function: `make lambda.invoke.sync`
 To test the API endpoint with the default FQDN: `curl -s -XGET ${O_API_ENDPOINT} | jq`
 
 To test the API endpoint with the custom domain name: `curl -s -XGET https://${P_DOMAINNAME}/${P_API_BASEPATH} | jq`
+
+## Observability
+With Lambda logging set to JSON, you can filter events, removing the platform events, with the following filter:
+```
+{($.type = "platform.initStart") || ($.type = "platform.start") || ($.type = "platform.report") || ($.type = "platform.extension")}
+{($.level = "INFO" || $.level = "WARN" || $.level = "ERROR")}
+{($.httpMethod = "GET") || ($.httpMethod = "POST") || ($.httpMethod = "PUT") || ($.httpMethod = "DELETE")}
+```
+
+## Request Validation
+Note when doing request validation, the API client needs to ensure that the `content-type: application/json` header is also passed along with the request. Otherwise, request validation will not work properly.

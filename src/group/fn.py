@@ -1,40 +1,23 @@
 import boto3
 import json
 from aws_xray_sdk.core import patch_all
+from lib.util import build_response, get_body, get_param, log_event
 from lib.domain.group import Group
 
 # initialization
 group = Group()
 patch_all()
 
-# helper functions
-def build_response(code, body):
-    headers = {
-        "Content-Type": "application/json"
-    }
-    response = {
-        "isBase64Encoded": False,
-        "statusCode": code,
-        "headers": headers,
-        "body": body
-    }
-    return response
-
-def get_body(event):
-    body = json.loads(event.get("body", "{}"))
-    return body
-
 def handler(event, context):
-    print(json.dumps(event))
+    log_event(event)
     response = {}
     method = event.get("httpMethod", "GET")
-    resource = event.get("resource")
-    path = event.get("path")
+    qsp = event.get("queryStringParameters")
     output = {}
     match method:
         case "GET":
-            if resource == "/group/{proxy+}":
-                uid = path.split("/")[3]
+            uid = get_param(qsp, "uid")
+            if uid is not None:
                 output = group.get_group(uid)
             else:
                 output = group.list_groups()
@@ -42,13 +25,13 @@ def handler(event, context):
             body = get_body(event)
             output = group.create_group(body.get("description"), body.get("is_private", False))
         case "PUT":
-            if resource == "/group/{proxy+}":
-                uid = path.split("/")[3]
+            uid = get_param(qsp, "uid")
+            if uid is not None:
                 body = get_body(event)
                 output = group.update_group(uid, body.get("description"), body.get("is_private", False))
         case "DELETE":
-            if resource == "/group/{proxy+}":
-                uid = path.split("/")[3]
+            uid = get_param(qsp, "uid")
+            if uid is not None:
                 output = group.delete_group(uid)
     response = build_response(200, json.dumps(output))
     return response

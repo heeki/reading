@@ -1,6 +1,6 @@
-import boto3
 import json
 import os
+from botocore.exceptions import ClientError
 from lib.adapter.dynamodb import DynamoDBAdapter
 
 class GroupPort:
@@ -8,13 +8,30 @@ class GroupPort:
         self.table = os.environ.get("TABLE")
         self.client = DynamoDBAdapter(self.table)
 
-    def transform(self, item):
+    def _transform(self, item):
         output = {
             "category": item["category"]["S"],
             "uid": item["uid"]["S"],
             "description": item["description"]["S"],
             "is_private": item["is_private"]["BOOL"]
         }
+        return output
+
+    def transform(self, item):
+        match item:
+            case list():
+                output = [self._transform(i) for i in item]
+            case _:
+                if "Attributes" in item:
+                    output = self._transform(item["Attributes"])
+                elif "ResponseMetadata" in item:
+                    output = {
+                        "ResponseMetadata": {
+                            "HTTPStatusCode": item["ResponseMetadata"]["HTTPStatusCode"]
+                        }
+                    }
+                else:
+                    output = self._transform(item)
         return output
 
     def list_groups(self):
@@ -25,9 +42,7 @@ class GroupPort:
             },
             projection_expression = "category, uid, description, is_private"
         )
-        output = []
-        for item in response:
-            output.append(self.transform(item))
+        output = self.transform(response)
         return output
 
     def get_group(self, uid):
@@ -39,7 +54,8 @@ class GroupPort:
             },
             projection_expression = "category, uid, description, is_private"
         )
-        output = self.transform(response[0])
+        transformed = self.transform(response)
+        output = transformed[0] if len(transformed) > 0 else {}
         return output
 
     def get_group_with_description(self, description):
@@ -53,7 +69,8 @@ class GroupPort:
             projection_expression = "category, uid, description, is_private"
         )
         self.client.reset_lsi()
-        output = self.transform(response[0])
+        transformed = self.transform(response)
+        output = transformed[0] if len(transformed) > 0 else {}
         return output
 
     def create_group(self, uid, description, is_private=False):
@@ -64,10 +81,7 @@ class GroupPort:
             "is_private": {"BOOL": is_private}
         }
         response = self.client.put(item)
-        if response["ResponseMetadata"]["HTTPStatusCode"] == 200:
-            output = {"uid": uid}
-        else:
-            output = {"uid": "00000000-0000-0000-0000-000000000000"}
+        output = {"uid": uid} if response["ResponseMetadata"]["HTTPStatusCode"] == 200 else {}
         return output
 
     def update_group(self, uid, description, is_private=False):
@@ -75,19 +89,28 @@ class GroupPort:
             "category": {"S": "group"},
             "uid": {"S": uid}
         }
-        response = self.client.update(
-            item_key,
-            update_expression="SET #description = :description, #is_private = :is_private",
-            expression_names={
-                "#description": "description",
-                "#is_private": "is_private"
-            },
-            expression_attributes={
-                ":description": {"S": description},
-                ":is_private": {"BOOL": is_private}
+        try:
+            response = self.client.update(
+                item_key,
+                update_expression="SET #description = :description, #is_private = :is_private",
+                condition_expression="#uid = :uid",
+                expression_names = {
+                    "#uid": "uid",
+                    "#description": "description",
+                    "#is_private": "is_private"
+                },
+                expression_attributes = {
+                    ":uid": {"S": uid},
+                    ":description": {"S": description},
+                    ":is_private": {"BOOL": is_private}
+                }
+            )
+            output = self.transform(response)
+        except ClientError as e:
+            output = {
+                "error": e.response["Error"]["Code"],
+                "message": "requested uid not found"
             }
-        )
-        output = self.transform(response["Attributes"])
         return output
 
     def delete_group(self, uid):
@@ -96,8 +119,5 @@ class GroupPort:
             "uid": {"S": uid}
         }
         response = self.client.delete(item_key)
-        if response["ResponseMetadata"]["HTTPStatusCode"] == 200:
-            output = self.transform(response["Attributes"])
-        else:
-            output = {"uid": "00000000-0000-0000-0000-000000000000"}
+        output = {"uid": uid} if "Attributes" in response else {}
         return output
