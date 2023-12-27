@@ -1,8 +1,8 @@
-openapi: 3.0.1
+openapi: 3.0.3
 info:
   title: reading-api
-  description: Readig application API endpoint
-  version: 0.1.0
+  description: Reading application API endpoint
+  version: 1.0.0
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
@@ -21,31 +21,87 @@ components:
       type: object
       properties:
         uid:
-          type: string
-          required: false
+          $ref: "#/components/schemas/uid"
         description:
           type: string
-          required: true
+          minLength: 2
         is_private:
           type: boolean
-          required: true
+      required:
+        - description
+        - is_private
+    groups:
+      type: array
+      items:
+        $ref: "#/components/schemas/group"
     user:
       type: object
       properties:
-        id:
+        uid:
+          $ref: "#/components/schemas/uid"
+        description:
           type: string
-        name:
-          type: string
+          minLength: 2
         email:
           type: string
+          minLength: 6
         group:
-          type: string
+          $ref: "#/components/schemas/uid"
+      required:
+        - description
+        - email
+    users:
+      type: array
+      items:
+        $ref: "#/components/schemas/user"
     uid:
-      type: object
-      properties:
-        uid:
-          type: string
+      type: string
+      # pattern: "^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$"
+      # minLength: 36
+      # maxLength: 36
   responses:
+    group:
+      description: ok
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/group"
+          example:
+            category: "group"
+            uid: "e5512fda-c5ec-4485-84ac-2592cd09a985"
+            description: "example group"
+            is_private: false
+    groups:
+      description: ok
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/groups"
+    user:
+      description: ok
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/user"
+          example:
+            category: "user"
+            uid: "432b5bcd-ce1f-48fa-b8f8-b78bc4716178"
+            description: "example user"
+            email: user@example.com
+    users:
+      description: ok
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/users"
+    uid:
+      description: ok
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/uid"
+          example:
+            uid: "7f42847e-db7c-4c16-b390-a1e7f4448919"
     error:
       description: internal server error
       content:
@@ -54,13 +110,27 @@ components:
             $ref: "#/components/schemas/error"
           example:
             code: 500
-            message: "unable to retrieve message"
+            message: "internal server error"
 
 paths:
   /group:
     get:
       summary: group
       description: returns list of groups
+      parameters:
+        - in: query
+          name: uid
+          required: false
+          schema:
+            $ref: "#/components/schemas/uid"
+      responses:
+        200:
+          $ref: "#/components/responses/groups"
+        500:
+          $ref: "#/components/responses/error"
+        default:
+          $ref: "#/components/responses/error"
+      x-amazon-apigateway-request-validator: param
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: AWS_PROXY
@@ -70,28 +140,19 @@ paths:
       summary: group
       description: creates group
       requestBody:
+        required: true
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/group"
-        required: true
+      responses:
+        200:
+          $ref: "#/components/responses/uid"
+        500:
+          $ref: "#/components/responses/error"
+        default:
+          $ref: "#/components/responses/error"
       x-amazon-apigateway-request-validator: body
-      x-amazon-apigateway-integration:
-        httpMethod: POST
-        type: AWS_PROXY
-        uri:
-          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${FnGroup}/invocations"
-  /group/{proxy+}:
-    get:
-      summary: group
-      description: returns details of a group
-      parameters:
-        - in: path
-          name: uid
-          required: true
-          schema:
-            type: string
-          description: uid
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: AWS_PROXY
@@ -101,17 +162,25 @@ paths:
       summary: group
       description: updates a group
       parameters:
-        - in: path
+        - in: query
           name: uid
           required: true
           schema:
-            type: string
-          description: uid
+            $ref: "#/components/schemas/uid"
       requestBody:
+        required: true
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/group"
+      responses:
+        200:
+          $ref: "#/components/responses/group"
+        500:
+          $ref: "#/components/responses/error"
+        default:
+          $ref: "#/components/responses/error"
+      x-amazon-apigateway-request-validator: both
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: AWS_PROXY
@@ -121,12 +190,19 @@ paths:
       summary: group
       description: deletes a group
       parameters:
-        - in: path
+        - in: query
           name: uid
           required: true
           schema:
-            type: string
-          description: uid
+            $ref: "#/components/schemas/uid"
+      responses:
+        200:
+          $ref: "#/components/responses/uid"
+        500:
+          $ref: "#/components/responses/error"
+        default:
+          $ref: "#/components/responses/error"
+      x-amazon-apigateway-request-validator: param
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: AWS_PROXY
@@ -136,17 +212,20 @@ paths:
     get:
       summary: user
       description: returns list of users
+      parameters:
+        - in: query
+          name: uid
+          required: false
+          schema:
+            $ref: "#/components/schemas/uid"
       responses:
         200:
-          description: ok
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/user"
+          $ref: "#/components/responses/users"
         500:
           $ref: "#/components/responses/error"
         default:
           $ref: "#/components/responses/error"
+      x-amazon-apigateway-request-validator: param
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: AWS_PROXY
@@ -156,28 +235,79 @@ paths:
       summary: user
       description: create user
       requestBody:
+        required: true
         content:
           application/json:
             schema:
               $ref: "#/components/schemas/user"
       responses:
         200:
-          description: ok
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/user"
+          $ref: "#/components/responses/uid"
         500:
           $ref: "#/components/responses/error"
         default:
           $ref: "#/components/responses/error"
+      x-amazon-apigateway-request-validator: body
       x-amazon-apigateway-integration:
         httpMethod: POST
         type: AWS_PROXY
         uri:
-          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${FnGroup}/invocations"
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${FnUser}/invocations"
+    put:
+      summary: user
+      description: updates a user
+      parameters:
+        - in: query
+          name: uid
+          required: true
+          schema:
+            $ref: "#/components/schemas/uid"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/user"
+      responses:
+        200:
+          $ref: "#/components/responses/user"
+        500:
+          $ref: "#/components/responses/error"
+        default:
+          $ref: "#/components/responses/error"
+      x-amazon-apigateway-request-validator: both
+      x-amazon-apigateway-integration:
+        httpMethod: POST
+        type: AWS_PROXY
+        uri:
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${FnUser}/invocations"
+    delete:
+      summary: user
+      description: deletes a user
+      parameters:
+        - in: query
+          name: uid
+          required: true
+          schema:
+            $ref: "#/components/schemas/uid"
+      responses:
+        200:
+          $ref: "#/components/responses/uid"
+        500:
+          $ref: "#/components/responses/error"
+        default:
+          $ref: "#/components/responses/error"
+      x-amazon-apigateway-request-validator: param
+      x-amazon-apigateway-integration:
+        httpMethod: POST
+        type: AWS_PROXY
+        uri:
+          Fn::Sub: "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${FnUser}/invocations"
 
 x-amazon-apigateway-request-validators:
+  both:
+    validateRequestBody: true
+    validateRequestParameters: true
   body:
     validateRequestBody: true
     validateRequestParameters: false

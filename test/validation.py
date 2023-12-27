@@ -201,7 +201,7 @@ class Tests(unittest.TestCase):
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     suite.addTest(Tests("test_group"))
-    # suite.addTest(Tests("test_user"))
+    suite.addTest(Tests("test_user"))
     # suite.addTest(Tests("test_plan"))
     # suite.addTest(Tests("test_reading"))
     runner = unittest.TextTestRunner()

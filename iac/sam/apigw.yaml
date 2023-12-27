@@ -5,9 +5,14 @@ Globals:
   Api:
     OpenApiVersion: 3.0.1
   Function:
+    Environment:
+      Variables:
+        TABLE: !Ref Table
+    Handler: fn.handler
     Layers:
       - arn:aws:lambda:us-east-1:546275881527:layer:xray-python3:3
       - arn:aws:lambda:us-east-1:580247275435:layer:LambdaInsightsExtension:38
+      - !Ref LayerLibraries
     MemorySize: !Ref pFnMemory
     Runtime: python3.11
     Timeout: !Ref pFnTimeout
@@ -59,6 +64,12 @@ Resources:
       AccessLogSetting:
         DestinationArn: !GetAtt ApiLogGroup.Arn
         Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","routeKey":"$context.routeKey", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
+      MethodSettings:
+        - ResourcePath: "/*"
+          HttpMethod: "*"
+          LoggingLevel: ERROR
+          DataTraceEnabled: true
+          MetricsEnabled: true
       StageName: !Ref pApiStage
       DefinitionBody:
         Fn::Transform:
@@ -153,13 +164,9 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ../../src/group
-      Handler: fn.handler
       Role: !GetAtt FnRole.Arn
-      Environment:
-        Variables:
-          TABLE: !Ref Table
-      Layers:
-        - !Ref LayerLibraries
+      LoggingConfig:
+        LogFormat: JSON
       Tags:
         application:group: reading
         application:subgroup: group
@@ -180,8 +187,9 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: ../../src/user
-      Handler: fn.handler
       Role: !GetAtt FnRole.Arn
+      LoggingConfig:
+        LogFormat: JSON
       Tags:
         application:group: reading
         application:subgroup: user

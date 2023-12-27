@@ -21,9 +21,6 @@ class User:
     def create_user(self, description, email):
         uid = str(uuid.uuid4())
         response = self.port.create_user(uid, description, email)
-        response["Item"] = {
-            "uid": uid
-        }
         return response
 
     def update_user(self, uid, description, email):
