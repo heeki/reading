@@ -92,7 +92,11 @@ class Tests(unittest.TestCase):
         response = user.get_user(uid)
         self.assertEqual(uid, response["uid"])
 
-        # get group with name
+        # get invalid user
+        response = user.get_user(self.invalid_uid)
+        self.assertEqual({}, response)
+
+        # get user with name
         response = user.get_user_with_description(new_user_name)
         print(json.dumps(response))
         self.assertEqual(new_user_name, response["description"])
@@ -105,11 +109,20 @@ class Tests(unittest.TestCase):
         self.assertEqual(updated_user_email, response["email"])
         print(f"updated user with uid={uid}")
 
+        # update invalid user
+        updated_user_name = f"updated user {self.test_id}"
+        response = user.update_user(self.invalid_uid, updated_user_name, updated_user_email)
+        self.assertEqual("ConditionalCheckFailedException", response["error"])
+
         # delete user
         response = user.delete_user(uid)
         updated_user_count = len(user.list_users())
         self.assertEqual(updated_user_count, baseline_user_count)
         print(f"deleted user with uid={uid}, base_count={baseline_user_count}, final_count={updated_user_count}")
+
+        # delete invalid user
+        response = user.delete_user(self.invalid_uid)
+        self.assertEqual({}, response)
 
     def test_plan(self):
         # baseline
@@ -129,8 +142,11 @@ class Tests(unittest.TestCase):
 
         # get plan
         response = plan.get_plan(uid)
-        print(json.dumps(response))
         self.assertEqual(uid, response["uid"])
+
+        # get invalid plan
+        response = plan.get_plan(self.invalid_uid)
+        self.assertEqual({}, response)
 
         # get plan with name
         response = plan.get_plan_with_description(new_plan_name)
@@ -143,11 +159,20 @@ class Tests(unittest.TestCase):
         self.assertEqual(updated_plan_name, response["description"])
         print(f"updated plan with uid={uid}")
 
+        # update invalid plan
+        updated_plan_name = f"updated plan {self.test_id}"
+        response = plan.update_plan(self.invalid_uid, updated_plan_name)
+        self.assertEqual("ConditionalCheckFailedException", response["error"])
+
         # delete plan
         response = plan.delete_plan(uid)
         updated_plan_count = len(plan.list_plans())
         self.assertEqual(updated_plan_count, baseline_plan_count)
         print(f"deleted plan with uid={uid}, base_count={baseline_plan_count}, final_count={updated_plan_count}")
+
+        # delete invalid plan
+        response = plan.delete_plan(self.invalid_uid)
+        self.assertEqual({}, response)
 
     def test_reading(self):
         # baseline
@@ -202,7 +227,7 @@ if __name__ == "__main__":
     suite = unittest.TestSuite()
     suite.addTest(Tests("test_group"))
     suite.addTest(Tests("test_user"))
-    # suite.addTest(Tests("test_plan"))
+    suite.addTest(Tests("test_plan"))
     # suite.addTest(Tests("test_reading"))
     runner = unittest.TextTestRunner()
     runner.run(suite)

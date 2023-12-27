@@ -206,6 +206,29 @@ Resources:
       Principal: apigateway.amazonaws.com
       Action: lambda:InvokeFunction
       SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${Api}/*/*/*'
+  FnPlan:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../../src/plan
+      Role: !GetAtt FnRole.Arn
+      LoggingConfig:
+        LogFormat: JSON
+      Tags:
+        application:group: reading
+        application:subgroup: plan
+        application:owner: heeki
+  FnPlanLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${FnPlan}'
+      RetentionInDays: 7
+  FnPlanPerm:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !GetAtt FnPlan.Arn
+      Principal: apigateway.amazonaws.com
+      Action: lambda:InvokeFunction
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${Api}/*/*/*'
 Outputs:
   outApi:
     Value: !Ref Api
@@ -215,6 +238,8 @@ Outputs:
     Value: !Ref FnGroup
   outFnUser:
     Value: !Ref FnUser
+  outFnPlan:
+    Value: !Ref FnPlan
   outTableArn:
     Value: !GetAtt Table.Arn
   outLayerLibraries:

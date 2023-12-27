@@ -21,9 +21,6 @@ class Plan:
     def create_plan(self, name, is_private=False):
         uid = str(uuid.uuid4())
         response = self.port.create_plan(uid, name, is_private)
-        response["Item"] = {
-            "uid": uid
-        }
         return response
 
     def update_plan(self, uid, description, is_private=False):

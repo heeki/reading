@@ -64,6 +64,17 @@ test.user:
 	curl -s -XPOST -H "content-type: application/json" -d @etc/user_invalid.json ${O_CUSTOM_ENDPOINT}/user | jq
 	curl -s -XPUT -H "content-type: application/json" -d @etc/user_put.json ${O_CUSTOM_ENDPOINT}/user?uid=invalid | jq
 	curl -s -XDELETE -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/user?uid=invalid | jq
+test.plan:
+	$(eval UID=$(shell curl -s -XPOST -H "content-type: application/json" -d @etc/plan_post.json ${O_CUSTOM_ENDPOINT}/plan | jq -r .uid))
+	curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/plan | jq '.[]' -c
+	curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/plan?uid=${UID} | jq
+	curl -s -XPUT -H "content-type: application/json" -d @etc/plan_put.json ${O_CUSTOM_ENDPOINT}/plan?uid=${UID} | jq
+	curl -s -XDELETE -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/plan?uid=${UID} | jq
+	curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/plan | jq '.[]' -c
+	curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/plan?uid=invalid | jq
+	curl -s -XPOST -H "content-type: application/json" -d @etc/plan_invalid.json ${O_CUSTOM_ENDPOINT}/plan | jq
+	curl -s -XPUT -H "content-type: application/json" -d @etc/plan_put.json ${O_CUSTOM_ENDPOINT}/plan?uid=invalid | jq
+	curl -s -XDELETE -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/plan?uid=invalid | jq
 curl.base:
 	curl -s -XGET ${O_CUSTOM_ENDPOINT}/group | jq 'del(.multiValueHeaders)'
 
