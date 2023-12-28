@@ -81,8 +81,8 @@ class Tests(unittest.TestCase):
         # create user
         new_user_name = f"test user {self.test_id}"
         new_user_email = "test@example.com"
-        new_user_group_id = "d3aa4ef7-b938-4d0e-b936-272e32139dce"
-        response = user.create_user(new_user_name, new_user_email, new_user_group_id)
+        new_user_group_ids = ["d3aa4ef7-b938-4d0e-b936-272e32139dce"]
+        response = user.create_user(new_user_name, new_user_email, new_user_group_ids)
         uid = response["uid"]
         self.assertIsNotNone(uid)
         updated_user_count = len(user.list_users())
@@ -105,16 +105,16 @@ class Tests(unittest.TestCase):
         # update user
         updated_user_name = f"updated user {self.test_id}"
         updated_user_email = "updated@example.com"
-        updated_user_group_id = "22ca8c3d-737e-4571-a9a3-43c2d2c04e62"
-        response = user.update_user(uid, updated_user_name, updated_user_email, updated_user_group_id)
+        updated_user_group_ids = ["22ca8c3d-737e-4571-a9a3-43c2d2c04e62"]
+        response = user.update_user(uid, updated_user_name, updated_user_email, updated_user_group_ids)
         self.assertEqual(updated_user_name, response["description"])
         self.assertEqual(updated_user_email, response["email"])
-        self.assertEqual(updated_user_group_id, response["group_id"])
+        self.assertEqual(updated_user_group_ids, response["group_ids"])
         print(f"updated user with uid={uid}")
 
         # update invalid user
         updated_user_name = f"updated user {self.test_id}"
-        response = user.update_user(self.invalid_uid, updated_user_name, updated_user_email, updated_user_group_id)
+        response = user.update_user(self.invalid_uid, updated_user_name, updated_user_email, updated_user_group_ids)
         self.assertEqual("ConditionalCheckFailedException", response["error"])
 
         # delete user
