@@ -23,12 +23,12 @@ def handler(event, context):
                 output = user.list_users()
         case "POST":
             body = get_body(event)
-            output = user.create_user(body.get("description"), body.get("email"), body.get("group_ids"))
+            output = user.create_user(body.get("description"), body.get("email"), body.get("group_ids"), body.get("plan_ids"))
         case "PUT":
             uid = get_param(qsp, "uid")
             if uid is not None:
                 body = get_body(event)
-                output = user.update_user(uid, body.get("description"), body.get("email"), body.get("group_ids"))
+                output = user.update_user(uid, body.get("description"), body.get("email"), body.get("group_ids"), body.get("plan_ids"))
         case "DELETE":
             uid = get_param(qsp, "uid")
             if uid is not None:

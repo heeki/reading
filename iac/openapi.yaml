@@ -22,6 +22,10 @@ components:
       # pattern: "^\w{8}-\w{4}-\w{4}-\w{4}-\w{12}$"
       # minLength: 36
       # maxLength: 36
+    uids:
+      type: array
+      items:
+        $ref: "#/components/schemas/uid"
     group:
       type: object
       properties:
@@ -50,11 +54,15 @@ components:
         email:
           type: string
           minLength: 6
-        group_id:
-          $ref: "#/components/schemas/uid"
+        group_ids:
+          $ref: "#/components/schemas/uids"
+        plan_ids:
+          $ref: "#/components/schemas/uids"
       required:
         - description
         - email
+        - group_ids
+        - plan_ids
     users:
       type: array
       items:
@@ -146,6 +154,8 @@ components:
             uid: "432b5bcd-ce1f-48fa-b8f8-b78bc4716178"
             description: "example user"
             email: user@example.com
+            group_ids: ["f179415c-c87d-4645-b44a-3f07034cd9a4"]
+            plan_ids: ["3def7b08-d3f9-45d9-b183-dd19d3f11a0f"]
     users:
       description: ok
       content:
