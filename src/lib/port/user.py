@@ -13,7 +13,8 @@ class UserPort:
             "category": item["category"]["S"],
             "uid": item["uid"]["S"],
             "description": item["description"]["S"],
-            "email": item["email"]["S"]
+            "email": item["email"]["S"],
+            "group_id": item["group_id"]["S"]
         }
         return output
 
@@ -40,7 +41,7 @@ class UserPort:
             expression_values = {
                 ":category": {"S": "user"}
             },
-            projection_expression = "category, uid, description, email"
+            projection_expression = "category, uid, description, email, group_id"
         )
         output = self.transform(response)
         return output
@@ -52,7 +53,7 @@ class UserPort:
                 ":category": {"S": "user"},
                 ":uid": {"S": uid}
             },
-            projection_expression = "category, uid, description, email"
+            projection_expression = "category, uid, description, email, group_id"
         )
         transformed = self.transform(response)
         output = transformed[0] if len(transformed) > 0 else {}
@@ -66,25 +67,26 @@ class UserPort:
                 ":category": {"S": "user"},
                 ":description": {"S": description}
             },
-            projection_expression = "category, uid, description, email"
+            projection_expression = "category, uid, description, email, group_id"
         )
         self.client.reset_lsi()
         transformed = self.transform(response)
         output = transformed[0] if len(transformed) > 0 else {}
         return output
 
-    def create_user(self, uid, description, email):
+    def create_user(self, uid, description, email, group_id):
         item = {
             "category": {"S": "user"},
             "uid": {"S": uid},
             "description": {"S": description},
-            "email": {"S": email}
+            "email": {"S": email},
+            "group_id": {"S": group_id}
         }
         response = self.client.put(item)
         output = {"uid": uid} if response["ResponseMetadata"]["HTTPStatusCode"] == 200 else {}
         return output
 
-    def update_user(self, uid, description, email):
+    def update_user(self, uid, description, email, group_id):
         item_key = {
             "category": {"S": "user"},
             "uid": {"S": uid}
@@ -93,16 +95,18 @@ class UserPort:
         try:
             response = self.client.update(
                 item_key,
-                update_expression="SET #description = :description, #email = :email",
+                update_expression="SET #description = :description, #email = :email, #group_id = :group_id",
                 condition_expression="uid = :uid",
                 expression_names={
                     "#description": "description",
-                    "#email": "email"
+                    "#email": "email",
+                    "#group_id": "group_id"
                 },
                 expression_attributes={
                     ":uid": {"S": uid},
                     ":description": {"S": description},
-                    ":email": {"S": email}
+                    ":email": {"S": email},
+                    ":group_id": {"S": group_id}
                 }
             )
             output = self.transform(response)
