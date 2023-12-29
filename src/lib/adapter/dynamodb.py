@@ -3,17 +3,17 @@ import json
 from botocore.exceptions import ClientError
 
 class DynamoDBAdapter:
-    def __init__(self, table, lsi=None):
+    def __init__(self, table, index=None):
         self.session = boto3.session.Session()
         self.client = self.session.client("dynamodb")
         self.table = table
-        self.lsi = lsi
+        self.index = index
 
-    def set_lsi(self, lsi):
-        self.lsi = lsi
+    def set_index(self, index):
+        self.index = index
 
-    def reset_lsi(self):
-        self.lsi = None
+    def reset_index(self):
+        self.index = None
 
     def get(self, hkey):
         response = self.client.get_item(
@@ -75,49 +75,28 @@ class DynamoDBAdapter:
         )
         return response["Items"]
 
-    def _query(self, expression_values, key_condition, projection_expression, last_key=None):
-        if last_key is None:
-            if self.lsi is None:
-                response = self.client.query(
-                    TableName=self.table,
-                    ExpressionAttributeValues=expression_values,
-                    KeyConditionExpression=key_condition,
-                    ProjectionExpression=projection_expression,
-                )
-            else:
-                response = self.client.query(
-                    TableName=self.table,
-                    IndexName=self.lsi,
-                    ExpressionAttributeValues=expression_values,
-                    KeyConditionExpression=key_condition,
-                    ProjectionExpression=projection_expression,
-                )
-        else:
-            if self.lsi is None:
-                response = self.client.query(
-                    TableName=self.table,
-                    ExpressionAttributeValues=expression_values,
-                    KeyConditionExpression=key_condition,
-                    ProjectionExpression=projection_expression,
-                    ExclusiveStartKey=last_key
-                )
-            else:
-                response = self.client.query(
-                    TableName=self.table,
-                    IndexName=self.lsi,
-                    ExpressionAttributeValues=expression_values,
-                    KeyConditionExpression=key_condition,
-                    ProjectionExpression=projection_expression,
-                    ExclusiveStartKey=last_key
-                )
+    def _query(self, expression_values, key_condition, projection_expression, filter_expression=None, last_key=None):
+        kwargs = {
+            "TableName": self.table,
+            "ExpressionAttributeValues": expression_values,
+            "KeyConditionExpression": key_condition,
+            "ProjectionExpression": projection_expression
+        }
+        if self.index is not None:
+            kwargs["IndexName"] = self.index
+        if filter_expression is not None:
+            kwargs["FilterExpression"] = filter_expression
+        if last_key is not None:
+            kwargs["ExclusiveStartKey"] = last_key
+        response = self.client.query(**kwargs)
         return response
 
-    def query(self, expression_values, key_condition, projection_expression):
+    def query(self, expression_values, key_condition, projection_expression, filter_expression=None):
         output = []
-        response = self._query(expression_values, key_condition, projection_expression)
+        response = self._query(expression_values, key_condition, projection_expression, filter_expression)
         output.extend(response["Items"])
         while "LastEvaluatedKey" in response:
-            response = self._query(expression_values, key_condition, projection_expression, last_key=response['LastEvaluatedKey'])
+            response = self._query(expression_values, key_condition, projection_expression, filter_expression, last_key=response['LastEvaluatedKey'])
             output.extend(response["Items"])
         return output
 

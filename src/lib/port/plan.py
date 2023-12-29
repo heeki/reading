@@ -59,7 +59,7 @@ class PlanPort:
         return output
 
     def get_plan_with_description(self, description):
-        self.client.set_lsi("description")
+        self.client.set_index("description")
         response = self.client.query(
             key_condition = "category = :category AND description = :description",
             expression_values = {
@@ -68,7 +68,7 @@ class PlanPort:
             },
             projection_expression = "category, uid, description, is_private"
         )
-        self.client.reset_lsi()
+        self.client.reset_index()
         transformed = self.transform(response)
         output = transformed[0] if len(transformed) > 0 else {}
         return output

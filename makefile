@@ -43,6 +43,7 @@ validation:
 
 # testing endpoints
 test: test.group test.user test.plan test.reading
+test.invalid: test.group.invalid test.user.invalid test.plan.invalid test.reading.invalid
 test.base:
 	curl -s -XGET ${O_CUSTOM_ENDPOINT}/group | jq 'del(.multiValueHeaders)'
 test.group:
@@ -52,6 +53,7 @@ test.group:
 	curl -s -XPUT -H "content-type: application/json" -d @etc/group_put.json ${O_CUSTOM_ENDPOINT}/group?uid=${UID} | jq
 	curl -s -XDELETE -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/group?uid=${UID} | jq
 	curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/group | jq '.[]' -c
+test.group.invalid:
 	curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/group?uid=invalid | jq
 	curl -s -XPOST -H "content-type: application/json" -d @etc/group_invalid.json ${O_CUSTOM_ENDPOINT}/group | jq
 	curl -s -XPUT -H "content-type: application/json" -d @etc/group_put.json ${O_CUSTOM_ENDPOINT}/group?uid=invalid | jq
@@ -63,6 +65,7 @@ test.user:
 	curl -s -XPUT -H "content-type: application/json" -d @etc/user_put.json ${O_CUSTOM_ENDPOINT}/user?uid=${UID} | jq
 	curl -s -XDELETE -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/user?uid=${UID} | jq
 	curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/user | jq '.[]' -c
+test.user.invalid:
 	curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/user?uid=invalid | jq
 	curl -s -XPOST -H "content-type: application/json" -d @etc/user_invalid.json ${O_CUSTOM_ENDPOINT}/user | jq
 	curl -s -XPUT -H "content-type: application/json" -d @etc/user_put.json ${O_CUSTOM_ENDPOINT}/user?uid=invalid | jq
@@ -74,6 +77,7 @@ test.plan:
 	curl -s -XPUT -H "content-type: application/json" -d @etc/plan_put.json ${O_CUSTOM_ENDPOINT}/plan?uid=${UID} | jq
 	curl -s -XDELETE -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/plan?uid=${UID} | jq
 	curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/plan | jq '.[]' -c
+test.plan.invalid:
 	curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/plan?uid=invalid | jq
 	curl -s -XPOST -H "content-type: application/json" -d @etc/plan_invalid.json ${O_CUSTOM_ENDPOINT}/plan | jq
 	curl -s -XPUT -H "content-type: application/json" -d @etc/plan_put.json ${O_CUSTOM_ENDPOINT}/plan?uid=invalid | jq
@@ -85,10 +89,14 @@ test.reading:
 	curl -s -XPUT -H "content-type: application/json" -d @etc/reading_put.json ${O_CUSTOM_ENDPOINT}/reading?uid=${UID} | jq
 	curl -s -XDELETE -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/reading?uid=${UID} | jq
 	curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/reading | jq '.[]' -c
+test.reading.invalid:
 	curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/reading?uid=invalid | jq
 	curl -s -XPOST -H "content-type: application/json" -d @etc/reading_invalid.json ${O_CUSTOM_ENDPOINT}/reading | jq
 	curl -s -XPUT -H "content-type: application/json" -d @etc/reading_put.json ${O_CUSTOM_ENDPOINT}/reading?uid=invalid | jq
 	curl -s -XDELETE -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/reading?uid=invalid | jq
+test.user_by_group:
+	$(eval GROUP_IDS=$(shell curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/group | jq -r '.[].uid'))
+	for group in ${GROUP_IDS}; do echo $$group; curl -s -XGET -H "content-type: application/json" -d @etc/user_put.json ${O_CUSTOM_ENDPOINT}/user?group_id=$$group | jq -c 'map(del(.group_ids, .plan_ids)) | .[]'; done
 
 # cdk alternate
 cdk.synth:

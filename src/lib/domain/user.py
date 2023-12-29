@@ -10,6 +10,10 @@ class User:
         response = self.port.list_users()
         return response
 
+    def list_users_by_group(self, group_id):
+        response = self.port.list_users_by_group(group_id)
+        return response
+
     def get_user(self, uid):
         response = self.port.get_user(uid)
         return response

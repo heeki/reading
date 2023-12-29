@@ -304,6 +304,11 @@ paths:
           required: false
           schema:
             $ref: "#/components/schemas/uid"
+        - in: query
+          name: group_id
+          required: false
+          schema:
+            $ref: "#/components/schemas/uid"
       responses:
         200:
           $ref: "#/components/responses/users"

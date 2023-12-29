@@ -17,8 +17,11 @@ def handler(event, context):
     match method:
         case "GET":
             uid = get_param(qsp, "uid")
+            group_id = get_param(qsp, "group_id")
             if uid is not None:
                 output = user.get_user(uid)
+            elif group_id is not None:
+                output = user.list_users_by_group(group_id)
             else:
                 output = user.list_users()
         case "POST":

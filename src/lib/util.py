@@ -16,10 +16,10 @@ def get_body(event):
     body = json.loads(event.get("body", "{}"))
     return body
 
-def get_param(qsp, param):
+def get_param(params, param):
     response = None
-    if qsp is not None and param in qsp:
-        response = qsp[param]
+    if params is not None and param in params:
+        response = params[param]
     return response
 
 def log_event(event):

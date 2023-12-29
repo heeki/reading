@@ -242,10 +242,24 @@ class Tests(unittest.TestCase):
         response = reading.delete_reading(self.invalid_uid)
         self.assertEqual({}, response)
 
+    def test_user_by_group(self):
+        # baseline
+        print()
+        group = Group()
+        groups = group.list_groups()
+
+        user = User()
+        for g in groups:
+            group_id = g.get("uid")
+            response = user.list_users_by_group(group_id)
+            print(f"group_id={group_id} count={len(response)}")
+        print("listed users by group_id")
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     suite.addTest(Tests("test_group"))
     suite.addTest(Tests("test_user"))
+    suite.addTest(Tests("test_user_by_group"))
     suite.addTest(Tests("test_plan"))
     suite.addTest(Tests("test_reading"))
     runner = unittest.TextTestRunner()

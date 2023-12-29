@@ -13,10 +13,12 @@ class UserPort:
             "category": item["category"]["S"],
             "uid": item["uid"]["S"],
             "description": item["description"]["S"],
-            "email": item["email"]["S"],
-            "group_ids": json.loads(item["group_ids"]["S"]),
-            "plan_ids": json.loads(item["plan_ids"]["S"])
+            "email": item["email"]["S"]
         }
+        if "group_ids" in item:
+            output["group_ids"] = json.loads(item["group_ids"]["S"])
+        if "plan_ids" in item:
+            output["plan_ids"] = json.loads(item["plan_ids"]["S"])
         return output
 
     def transform(self, item):
@@ -47,6 +49,21 @@ class UserPort:
         output = self.transform(response)
         return output
 
+    def list_users_by_group(self, group_id):
+        # self.client.set_index("groups")
+        response = self.client.query(
+            key_condition = "category = :category",
+            filter_expression = "contains(group_ids, :group_id)",
+            expression_values = {
+                ":category": {"S": "user"},
+                ":group_id": {"S": group_id}
+            },
+            projection_expression = "category, uid, description, email, group_ids, plan_ids"
+        )
+        # self.client.reset_index()
+        output = self.transform(response)
+        return output
+
     def get_user(self, uid):
         response = self.client.query(
             key_condition = "category = :category AND uid = :uid",
@@ -61,7 +78,7 @@ class UserPort:
         return output
 
     def get_user_with_description(self, description):
-        self.client.set_lsi("description")
+        self.client.set_index("description")
         response = self.client.query(
             key_condition = "category = :category AND description = :description",
             expression_values = {
@@ -70,7 +87,7 @@ class UserPort:
             },
             projection_expression = "category, uid, description, email, group_ids, plan_ids"
         )
-        self.client.reset_lsi()
+        self.client.reset_index()
         transformed = self.transform(response)
         output = transformed[0] if len(transformed) > 0 else {}
         return output
