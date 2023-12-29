@@ -252,14 +252,28 @@ class Tests(unittest.TestCase):
         for g in groups:
             group_id = g.get("uid")
             response = user.list_users_by_group(group_id)
-            print(f"group_id={group_id} count={len(response)}")
+            print(f"group_id={group_id} user_count={len(response)}")
         print("listed users by group_id")
+
+    def test_user_by_plan(self):
+        # baseline
+        print()
+        plan = Plan()
+        plans = plan.list_plans()
+
+        user = User()
+        for p in plans:
+            plan_id = p.get("uid")
+            response = user.list_users_by_plan(plan_id)
+            print(f"plan_id={plan_id} user_count={len(response)}")
+        print("listed users by plan_id")
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     suite.addTest(Tests("test_group"))
     suite.addTest(Tests("test_user"))
     suite.addTest(Tests("test_user_by_group"))
+    suite.addTest(Tests("test_user_by_plan"))
     suite.addTest(Tests("test_plan"))
     suite.addTest(Tests("test_reading"))
     runner = unittest.TextTestRunner()

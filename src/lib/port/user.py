@@ -50,7 +50,6 @@ class UserPort:
         return output
 
     def list_users_by_group(self, group_id):
-        # self.client.set_index("groups")
         response = self.client.query(
             key_condition = "category = :category",
             filter_expression = "contains(group_ids, :group_id)",
@@ -60,7 +59,19 @@ class UserPort:
             },
             projection_expression = "category, uid, description, email, group_ids, plan_ids"
         )
-        # self.client.reset_index()
+        output = self.transform(response)
+        return output
+
+    def list_users_by_plan(self, plan_id):
+        response = self.client.query(
+            key_condition = "category = :category",
+            filter_expression = "contains(plan_ids, :plan_id)",
+            expression_values = {
+                ":category": {"S": "user"},
+                ":plan_id": {"S": plan_id}
+            },
+            projection_expression = "category, uid, description, email, group_ids, plan_ids"
+        )
         output = self.transform(response)
         return output
 

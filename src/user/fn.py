@@ -18,10 +18,13 @@ def handler(event, context):
         case "GET":
             uid = get_param(qsp, "uid")
             group_id = get_param(qsp, "group_id")
+            plan_id = get_param(qsp, "plan_id")
             if uid is not None:
                 output = user.get_user(uid)
             elif group_id is not None:
                 output = user.list_users_by_group(group_id)
+            elif plan_id is not None:
+                output = user.list_users_by_plan(plan_id)
             else:
                 output = user.list_users()
         case "POST":
