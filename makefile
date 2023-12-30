@@ -41,6 +41,21 @@ lambda.invoke.async:
 validation:
 	PYTHONPATH=src python3 test/validation.py
 
+# scheduler
+scheduler: scheduler.package scheduler.deploy
+scheduler.package:
+	sam package -t ${SCHEDULER_TEMPLATE} --output-template-file ${SCHEDULER_OUTPUT} --s3-bucket ${BUCKET} --s3-prefix ${SCHEDULER_STACK}
+scheduler.deploy:
+	sam deploy -t ${SCHEDULER_OUTPUT} --stack-name ${SCHEDULER_STACK} --parameter-overrides ${SCHEDULER_PARAMS} --capabilities CAPABILITY_NAMED_IAM
+scheduler.delete:
+	sam delete --stack-name ${SCHEDULER_STACK}
+
+# testing deployed resources
+sf.invoke:
+	aws --profile ${PROFILE} stepfunctions start-execution --state-machine-arn ${O_SF_ARN} --input file://etc/scheduler.json | jq
+sf.list-executions:
+	aws --profile ${PROFILE} stepfunctions list-executions --state-machine-arn ${O_SF_ARN} | jq
+
 # testing endpoints
 test: test.group test.user test.plan test.reading
 test.invalid: test.group.invalid test.user.invalid test.plan.invalid test.reading.invalid

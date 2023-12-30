@@ -1,0 +1,38 @@
+{
+  "Comment": "Daily workflow for sending out readings",
+  "StartAt": "GetUsersByPlan",
+  "States": {
+    "GetUsersByPlan": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::http:invoke",
+      "Parameters": {
+        "ApiEndpoint.$": "$.detail.user_endpoint",
+        "Method": "GET",
+        "Authentication": {
+          "ConnectionArn": "${Connection}"
+        },
+        "Headers": {
+          "content-type": "application/json"
+        },
+        "QueryParameters": {
+          "plan_id.$": "$.detail.plan_id"
+        }
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "BackoffRate": 2,
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "JitterStrategy": "FULL"
+        }
+      ],
+      "ResultSelector": {
+        "users.$": "$.ResponseBody"
+      },
+      "End": true
+    }
+  }
+}
