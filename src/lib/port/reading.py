@@ -63,7 +63,18 @@ class ReadingPort:
         return output
 
     def get_reading_by_date(self, date):
-        pass
+        response = self.client.query(
+            key_condition = "category = :category",
+            filter_expression = "begins_with(sent_date, :sent_date)",
+            expression_values = {
+                ":category": {"S": "reading"},
+                ":sent_date": {"S": date}
+            },
+            projection_expression = "category, uid, description, body, plan_id, sent_date, sent_count"
+        )
+        transformed = self.transform(response)
+        output = transformed[0] if len(transformed) > 0 else {}
+        return output
 
     def get_reading_by_description(self, description):
         self.client.set_index("description")

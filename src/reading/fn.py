@@ -17,8 +17,11 @@ def handler(event, context):
     match method:
         case "GET":
             uid = get_param(qsp, "uid")
+            date = get_param(qsp, "date")
             if uid is not None:
                 output = reading.get_reading(uid)
+            elif date is not None:
+                output = reading.get_reading_by_date(date)
             else:
                 output = reading.list_readings()
         case "POST":

@@ -243,7 +243,6 @@ class Tests(unittest.TestCase):
         self.assertEqual({}, response)
 
     def test_user_by_group(self):
-        # baseline
         print()
         group = Group()
         groups = group.list_groups()
@@ -256,7 +255,6 @@ class Tests(unittest.TestCase):
         print("listed users by group_id")
 
     def test_user_by_plan(self):
-        # baseline
         print()
         plan = Plan()
         plans = plan.list_plans()
@@ -268,6 +266,26 @@ class Tests(unittest.TestCase):
             print(f"plan_id={plan_id} user_count={len(response)}")
         print("listed users by plan_id")
 
+    def test_reading_by_date(self):
+        print()
+        reading = Reading()
+        new_reading_name = f"test reading {self.test_id}"
+        new_reading_body = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+        new_reading_plan_id = str(uuid.uuid4())
+        new_reading_sent_date = datetime.datetime.now().isoformat()
+        new_reading_sent_count = "1"
+        response = reading.create_reading(new_reading_name, new_reading_body, new_reading_plan_id, new_reading_sent_date, new_reading_sent_count)
+        uid = response["uid"]
+
+        response = reading.get_reading_by_date(new_reading_sent_date)
+        self.assertEqual(new_reading_sent_date, response["sent_date"])
+
+        shortened_date = new_reading_sent_date.split("T")[0]
+        response = reading.get_reading_by_date(shortened_date)
+        self.assertEqual(new_reading_sent_date, response["sent_date"])
+
+        response = reading.delete_reading(uid)
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     suite.addTest(Tests("test_group"))
@@ -276,5 +294,6 @@ if __name__ == "__main__":
     suite.addTest(Tests("test_user_by_plan"))
     suite.addTest(Tests("test_plan"))
     suite.addTest(Tests("test_reading"))
+    suite.addTest(Tests("test_reading_by_date"))
     runner = unittest.TextTestRunner()
     runner.run(suite)

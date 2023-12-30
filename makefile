@@ -59,7 +59,7 @@ sf.list-executions:
 # testing endpoints
 test: test.group test.user test.plan test.reading
 test.invalid: test.group.invalid test.user.invalid test.plan.invalid test.reading.invalid
-test.user_by: test.user_by_group test.user_by_plan
+test.by: test.user_by_group test.user_by_plan test.reading_by_date
 test.base:
 	curl -s -XGET ${O_CUSTOM_ENDPOINT}/group | jq 'del(.multiValueHeaders)'
 test.group:
@@ -116,6 +116,8 @@ test.user_by_group:
 test.user_by_plan:
 	$(eval PLAN_IDS=$(shell curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/plan | jq -r '.[].uid'))
 	for uid in ${PLAN_IDS}; do echo $$uid; curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/user?plan_id=$$uid | jq -c 'map(del(.group_ids, .plan_ids)) | .[]'; done
+test.reading_by_date:
+	curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/reading?date=2023-12-29 | jq
 
 # cdk alternate
 cdk.synth:
