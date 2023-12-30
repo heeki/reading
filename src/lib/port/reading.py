@@ -62,7 +62,10 @@ class ReadingPort:
         output = transformed[0] if len(transformed) > 0 else {}
         return output
 
-    def get_reading_with_description(self, description):
+    def get_reading_by_date(self, date):
+        pass
+
+    def get_reading_by_description(self, description):
         self.client.set_index("description")
         response = self.client.query(
             key_condition = "category = :category AND description = :description",

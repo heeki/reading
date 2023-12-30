@@ -14,8 +14,12 @@ class Reading:
         response = self.port.get_reading(uid)
         return response
 
-    def get_reading_with_description(self, description):
-        response = self.port.get_reading_with_description(description)
+    def get_reading_by_description(self, description):
+        response = self.port.get_reading_by_description(description)
+        return response
+
+    def get_reading_by_date(self, date):
+        response = self.port.get_reading_by_date(date)
         return response
 
     def create_reading(self, description, body, plan_id, sent_date, sent_count):

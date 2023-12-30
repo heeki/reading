@@ -22,8 +22,8 @@ class User:
         response = self.port.get_user(uid)
         return response
 
-    def get_user_with_description(self, description):
-        response = self.port.get_user_with_description(description)
+    def get_user_by_description(self, description):
+        response = self.port.get_user_by_description(description)
         return response
 
     def create_user(self, description, email, group_ids, plan_ids):

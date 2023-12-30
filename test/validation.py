@@ -41,13 +41,13 @@ class Tests(unittest.TestCase):
         response = group.get_group(self.invalid_uid)
         self.assertEqual({}, response)
 
-        # get group with name
-        response = group.get_group_with_description(new_group_name)
+        # get group by name
+        response = group.get_group_by_description(new_group_name)
         print(json.dumps(response))
         self.assertEqual(new_group_name, response["description"])
 
-        # get group with invalid name
-        response = group.get_group_with_description(self.invalid_uid)
+        # get group by invalid name
+        response = group.get_group_by_description(self.invalid_uid)
         self.assertEqual({}, response)
 
         # update group
@@ -98,8 +98,8 @@ class Tests(unittest.TestCase):
         response = user.get_user(self.invalid_uid)
         self.assertEqual({}, response)
 
-        # get user with name
-        response = user.get_user_with_description(new_user_name)
+        # get user by name
+        response = user.get_user_by_description(new_user_name)
         print(json.dumps(response))
         self.assertEqual(new_user_name, response["description"])
 
@@ -154,8 +154,8 @@ class Tests(unittest.TestCase):
         response = plan.get_plan(self.invalid_uid)
         self.assertEqual({}, response)
 
-        # get plan with name
-        response = plan.get_plan_with_description(new_plan_name)
+        # get plan by name
+        response = plan.get_plan_by_description(new_plan_name)
         print(json.dumps(response))
         self.assertEqual(new_plan_name, response["description"])
 
@@ -208,8 +208,8 @@ class Tests(unittest.TestCase):
         response = reading.get_reading(self.invalid_uid)
         self.assertEqual({}, response)
 
-        # get reading with name
-        response = reading.get_reading_with_description(new_reading_name)
+        # get reading by name
+        response = reading.get_reading_by_description(new_reading_name)
         print(json.dumps(response))
         self.assertEqual(new_reading_name, response["description"])
 

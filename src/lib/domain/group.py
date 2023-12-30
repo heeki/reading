@@ -14,8 +14,8 @@ class Group:
         response = self.port.get_group(uid)
         return response
 
-    def get_group_with_description(self, description):
-        response = self.port.get_group_with_description(description)
+    def get_group_by_description(self, description):
+        response = self.port.get_group_by_description(description)
         return response
 
     def create_group(self, description, is_private=False):

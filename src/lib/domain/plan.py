@@ -14,8 +14,8 @@ class Plan:
         response = self.port.get_plan(uid)
         return response
 
-    def get_plan_with_description(self, description):
-        response = self.port.get_plan_with_description(description)
+    def get_plan_by_description(self, description):
+        response = self.port.get_plan_by_description(description)
         return response
 
     def create_plan(self, name, is_private=False):
