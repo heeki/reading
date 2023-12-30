@@ -1,7 +1,41 @@
 {
   "Comment": "Daily workflow for sending out readings",
-  "StartAt": "GetUsersByPlan",
+  "StartAt": "GetTodaysReading",
   "States": {
+    "GetTodaysReading": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::http:invoke",
+      "Parameters": {
+        "ApiEndpoint.$": "$.detail.reading_endpoint",
+        "Method": "GET",
+        "Authentication": {
+          "ConnectionArn": "${Connection}"
+        },
+        "Headers": {
+          "content-type": "application/json"
+        },
+        "QueryParameters": {
+          "date.$": "States.ArrayGetItem(States.StringSplit($.time, 'T'), 0)"
+        }
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "BackoffRate": 2,
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "JitterStrategy": "FULL"
+        }
+      ],
+      "ResultSelector": {
+        "reading.$": "$.ResponseBody"
+      },
+      "ResultPath": "$.reading",
+      "OutputPath": "$",
+      "Next": "GetUsersByPlan"
+    },
     "GetUsersByPlan": {
       "Type": "Task",
       "Resource": "arn:aws:states:::http:invoke",
@@ -32,6 +66,8 @@
       "ResultSelector": {
         "users.$": "$.ResponseBody"
       },
+      "ResultPath": "$.users",
+      "OutputPath": "$",
       "End": true
     }
   }
