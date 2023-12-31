@@ -30,7 +30,7 @@
         }
       ],
       "ResultSelector": {
-        "reading.$": "$.ResponseBody"
+        "response.$": "$.ResponseBody"
       },
       "ResultPath": "$.reading",
       "OutputPath": "$",
@@ -64,9 +64,25 @@
         }
       ],
       "ResultSelector": {
-        "users.$": "$.ResponseBody"
+        "response.$": "$.ResponseBody"
       },
       "ResultPath": "$.users",
+      "OutputPath": "$",
+      "Next": "SendReading"
+    },
+    "SendReading": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sns:publish",
+      "Parameters": {
+        "TopicArn": "${Topic}",
+        "Subject.$": "States.Format('Daily Reading for {}', States.ArrayGetItem(States.StringSplit($.time, 'T'), 0))",
+        "Message.$": "$.reading.response.body"
+      },
+      "ResultSelector": {
+        "message_id.$": "$.MessageId",
+        "request_id.$": "$.SdkResponseMetadata.RequestId"
+      },
+      "ResultPath": "$.publish_result",
       "OutputPath": "$",
       "End": true
     }

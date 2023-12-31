@@ -78,6 +78,17 @@ Resources:
         ApiKeyAuthParameters:
           ApiKeyName: Authorization
           ApiKeyValue: !Sub "{{resolve:secretsmanager:${Token}}}"
+  # SNS
+  Topic:
+    Type: AWS::SNS::Topic
+    Properties:
+      Tags:
+        - Key: application:group
+          Value: reading
+        - Key: application:subgroup
+          Value: scheduler
+        - Key: application:owner
+          Value: heeki
   # Step Function
   SFnExecRole:
     Type: AWS::IAM::Role
@@ -138,6 +149,14 @@ Resources:
                     "states:HTTPMethod": "GET"
                   StringLike:
                     "states:HTTPEndpoint": !Join ["/", [!Ref pEndpoint, "*"]]
+        - PolicyName: sns
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sns:Publish
+                Resource: !Ref Topic
         - PolicyName: lambda
           PolicyDocument:
             Version: '2012-10-17'
@@ -153,6 +172,7 @@ Resources:
         DefinitionUri: ../asl.json
         DefinitionSubstitutions:
           Connection: !GetAtt Connection.Arn
+          Topic: !Ref Topic
         Logging:
           Destinations:
             - CloudWatchLogsLogGroup:
@@ -233,11 +253,13 @@ Resources:
       LogGroupName: !Sub '/aws/lambda/${Fn}'
       RetentionInDays: 7
 Outputs:
+  outTopic:
+    Value: !Ref Topic
+  outSchedule:
+    Value: !Ref Schedule
+  outConnection:
+    Value: !GetAtt Connection.Arn
   outSFn:
     Value: !Ref SFn
   outFn:
     Value: !Ref Fn
-  outScheduler:
-    Value: !Ref Schedule
-  outConnection:
-    Value: !GetAtt Connection.Arn
