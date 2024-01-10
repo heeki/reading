@@ -2,23 +2,28 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: API Gateway infrastructure template
 Transform: AWS::Serverless-2016-10-31
 Parameters:
-  pDomainName:
+  pDomainNameRoot:
+    Type: String
+  pDomainNameApi:
+    Type: String
+  pDomainNameEmail:
     Type: String
   pHostedZoneId:
     Type: String
 Resources:
+  # API Gateway
   Certificate:
     Type: AWS::CertificateManager::Certificate
     Properties:
-      DomainName: !Ref pDomainName
+      DomainName: !Ref pDomainNameApi
       DomainValidationOptions:
-        - DomainName: !Ref pDomainName
+        - DomainName: !Ref pDomainNameApi
           HostedZoneId: !Ref pHostedZoneId
       ValidationMethod: DNS
   Domain:
     Type: AWS::ApiGateway::DomainName
     Properties:
-      DomainName: !Ref pDomainName
+      DomainName: !Ref pDomainNameApi
       EndpointConfiguration:
         Types:
           - REGIONAL
@@ -27,11 +32,39 @@ Resources:
     Type: AWS::Route53::RecordSet
     Properties:
       HostedZoneId: !Ref pHostedZoneId
-      Name: !Ref pDomainName
+      Name: !Ref pDomainNameApi
       Type: A
       AliasTarget:
         HostedZoneId: !GetAtt Domain.RegionalHostedZoneId
         DNSName: !GetAtt Domain.RegionalDomainName
+  # SES
+  EmailConfiguration:
+    Type: AWS::SES::ConfigurationSet
+    Properties:
+      DeliveryOptions:
+        TlsPolicy: REQUIRE
+      ReputationOptions:
+        ReputationMetricsEnabled: true
+      SendingOptions:
+        SendingEnabled: true
+      SuppressionOptions:
+        SuppressedReasons:
+          - BOUNCE
+          - COMPLAINT
+      VdmOptions:
+        DashboardOptions:
+          EngagementMetrics: ENABLED
+        GuardianOptions:
+          OptimizedSharedDelivery: ENABLED
+  # EmailIdentity:
+  #   Type: AWS::SES::EmailIdentity
+  #   Properties:
+  #     ConfigurationSetAttributes:
+  #       ConfigurationSetName: !Ref EmailConfiguration
+  #     EmailIdentity: !Ref pDomainNameRoot
+  #     MailFromAttributes:
+  #       BehaviorOnMxFailure: USE_DEFAULT_VALUE
+  #       MailFromDomain: !Ref pDomainNameEmail
 Outputs:
   outCertificateArn:
     Value: !Ref Certificate

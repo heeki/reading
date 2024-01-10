@@ -64,18 +64,88 @@
         }
       ],
       "ResultSelector": {
-        "response.$": "$.ResponseBody"
+        "response.$": "$.ResponseBody",
+        "emails.$": "$.ResponseBody[*].email"
       },
       "ResultPath": "$.users",
       "OutputPath": "$",
-      "Next": "SendReading"
+      "Next": "SendChoice"
     },
-    "SendReading": {
+    "SendChoice": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.detail.send_type",
+          "StringEquals": "email",
+          "Next": "MapEmail"
+        }
+      ],
+      "Default": "SendNotification"
+    },
+    "MapEmail": {
+      "Type": "Map",
+      "ItemsPath": "$.users.emails",
+      "ItemSelector": {
+        "email.$": "States.Array($$.Map.Item.Value)",
+        "date.$": "States.ArrayGetItem(States.StringSplit($.time, 'T'), 0)",
+        "reading.$": "$.reading.response.body"
+      },
+      "ItemProcessor": {
+        "ProcessorConfig": {
+          "Mode": "INLINE"
+        },
+        "StartAt": "SendEmail",
+        "States": {
+          "SendEmail": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::aws-sdk:sesv2:sendEmail",
+            "Parameters": {
+              "Content": {
+                "Simple": {
+                  "Subject": {
+                    "Charset": "UTF-8",
+                    "Data.$": "States.Format('Daily Reading for {}', $.date)"
+                  },
+                  "Body": {
+                    "Html": {
+                      "Charset": "UTF-8",
+                      "Data.$": "$.reading"
+                    }
+                  }
+                }
+              },
+              "Destination": {
+                "ToAddresses.$": "$.email"
+              },
+              "FromEmailAddress": "reading@mail.heeki.cloud",
+              "ReplyToAddresses": ["reading@mail.heeki.cloud"]
+            },
+            "ResultSelector": {
+              "message_id.$": "$.MessageId"
+            },
+            "ResultPath": "$.publish_result",
+            "OutputPath": "$",
+            "Next": "CleanUp"
+          },
+          "CleanUp": {
+            "Type": "Pass",
+            "Parameters": {
+              "date.$": "$.date",
+              "email.$": "$.email[0]",
+              "message_id.$": "$.publish_result.message_id"
+            },
+            "End": true
+          }
+        }
+      },
+      "End": true
+    },
+    "SendNotification": {
       "Type": "Task",
       "Resource": "arn:aws:states:::sns:publish",
       "Parameters": {
         "TopicArn": "${Topic}",
-        "Subject.$": "States.Format('Daily Reading for {}', States.ArrayGetItem(States.StringSplit($.time, 'T'), 0))",
+        "Subject.$": "States.Format('Daily Reading on {}', States.ArrayGetItem(States.StringSplit($.time, 'T'), 0))",
         "Message.$": "$.reading.response.body"
       },
       "ResultSelector": {

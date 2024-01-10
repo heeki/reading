@@ -23,6 +23,10 @@ Parameters:
     Type: String
   pApiKey:
     Type: String
+  pEmailIdentityArn:
+    Type: String
+  pDomainEmail:
+    Type: String
 Resources:
   # Secret
   Token:
@@ -157,6 +161,18 @@ Resources:
                 Action:
                   - sns:Publish
                 Resource: !Ref Topic
+        - PolicyName: ses
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ses:SendEmail
+                # Resource: !Ref pEmailIdentityArn
+                Resource: "*"
+                Condition:
+                  StringLike:
+                    "ses:FromAddress": !Join ["@", ["*", !Ref pDomainEmail]]
         - PolicyName: lambda
           PolicyDocument:
             Version: '2012-10-17'
