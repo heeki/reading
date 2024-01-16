@@ -3,12 +3,15 @@ REGION=us-east-1
 BUCKET=your-deployment-bucket
 
 P_HOSTEDZONE_ID=your-hosted-zone-id
-P_DOMAINNAME=your.custom.domain.com
+P_DOMAINNAME_ROOT=example.com
+P_DOMAINNAME_EMAIL=mail.example.com
+P_DOMAINNAME_API=api.example.com
+P_EMAIL_SUBJECT='Bible Reading'
 INFRASTRUCTURE_STACK=api-infrastructure
 INFRASTRUCTURE_TEMPLATE=iac/sam/infrastructure.yaml
 INFRASTRUCTURE_OUTPUT=iac/sam/infrastructure_output.yaml
-INFRASTRUCTURE_PARAMS="ParameterKey=pDomainName,ParameterValue=${P_DOMAINNAME} ParameterKey=pHostedZoneId,ParameterValue=${P_HOSTEDZONE_ID}"
-O_CERT_ARN=output-certificate-arn
+INFRASTRUCTURE_PARAMS="ParameterKey=pDomainNameRoot,ParameterValue=${P_DOMAINNAME_ROOT} ParameterKey=pDomainNameApi,ParameterValue=${P_DOMAINNAME_API} ParameterKey=pDomainNameEmail,ParameterValue=${P_DOMAINNAME_EMAIL} ParameterKey=pEmailSubject,ParameterValue=${P_EMAIL_SUBJECT} ParameterKey=pHostedZoneId,ParameterValue=${P_HOSTEDZONE_ID}"
+O_EMAIL_TEMPLATE=output-email-template-name
 
 P_API_BASEPATH=reading
 P_API_STAGE=dev
@@ -26,9 +29,12 @@ O_TABLE_ARN=output-table-arn
 P_FN_LOCAL=FnGroup
 export TABLE=table-name
 
+P_ENDPOINT=https://api.example.com/reading
+P_PLAN_ID=plan_id_uuid
+P_API_KEY=tbd
 SCHEDULER_STACK=reading-scheduler
 SCHEDULER_TEMPLATE=iac/sam/scheduler.yaml
 SCHEDULER_OUTPUT=iac/sam/scheduler_output.yaml
-SCHEDULER_PARAMS="ParameterKey=pFnMemory,ParameterValue=${P_FN_MEMORY} ParameterKey=pFnTimeout,ParameterValue=${P_FN_TIMEOUT}"
+SCHEDULER_PARAMS="ParameterKey=pFnMemory,ParameterValue=${P_FN_MEMORY} ParameterKey=pFnTimeout,ParameterValue=${P_FN_TIMEOUT} ParameterKey=pEndpoint,ParameterValue=${P_ENDPOINT} ParameterKey=pPlanId,ParameterValue=${P_PLAN_ID} ParameterKey=pApiKey,ParameterValue=${P_API_KEY} ParameterKey=pEmailTemplate,ParameterValue=${O_EMAIL_TEMPLATE} ParameterKey=pEmailSubject,ParameterValue=${P_EMAIL_SUBJECT} ParameterKey=pDomainEmail,ParameterValue=${P_DOMAINNAME_EMAIL}"
 O_SFN=output-step-function-arn
-O_FN_1=output-fn-name
+O_FN=output-fn-name

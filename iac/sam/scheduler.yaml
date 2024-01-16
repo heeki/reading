@@ -23,7 +23,9 @@ Parameters:
     Type: String
   pApiKey:
     Type: String
-  pEmailIdentityArn:
+  pEmailTemplate:
+    Type: String
+  pEmailSubject:
     Type: String
   pDomainEmail:
     Type: String
@@ -168,7 +170,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - ses:SendEmail
-                # Resource: !Ref pEmailIdentityArn
+                  - ses:SendTemplatedEmail
                 Resource: "*"
                 Condition:
                   StringLike:
@@ -188,6 +190,8 @@ Resources:
         DefinitionUri: ../asl.json
         DefinitionSubstitutions:
           Connection: !GetAtt Connection.Arn
+          EmailSubject: !Ref pEmailSubject
+          EmailTemplate: !Ref pEmailTemplate
           Topic: !Ref Topic
         Logging:
           Destinations:

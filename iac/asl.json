@@ -78,6 +78,11 @@
           "Variable": "$.detail.send_type",
           "StringEquals": "email",
           "Next": "MapEmail"
+        },
+        {
+          "Variable": "$.detail.send_type",
+          "StringEquals": "template",
+          "Next": "MapTemplate"
         }
       ],
       "Default": "SendNotification"
@@ -86,6 +91,7 @@
       "Type": "Map",
       "ItemsPath": "$.users.emails",
       "ItemSelector": {
+        "source_email.$": "$.detail.source_email",
         "email.$": "States.Array($$.Map.Item.Value)",
         "date.$": "States.ArrayGetItem(States.StringSplit($.time, 'T'), 0)",
         "reading.$": "$.reading.response.body"
@@ -104,7 +110,7 @@
                 "Simple": {
                   "Subject": {
                     "Charset": "UTF-8",
-                    "Data.$": "States.Format('Daily Reading for {}', $.date)"
+                    "Data.$": "States.Format('${EmailSubject} for {}', $.date)"
                   },
                   "Body": {
                     "Html": {
@@ -117,8 +123,8 @@
               "Destination": {
                 "ToAddresses.$": "$.email"
               },
-              "FromEmailAddress": "reading@mail.heeki.cloud",
-              "ReplyToAddresses": ["reading@mail.heeki.cloud"]
+              "FromEmailAddress.$": "$.source_email",
+              "ReplyToAddresses.$": "States.Array($.source_email)"
             },
             "ResultSelector": {
               "message_id.$": "$.MessageId"
@@ -140,12 +146,53 @@
       },
       "End": true
     },
+    "MapTemplate": {
+      "Type": "Map",
+      "ItemsPath": "$.users.response",
+      "ItemSelector": {
+        "source_email.$": "$.detail.source_email",
+        "email.$": "States.Array($$.Map.Item.Value.email)",
+        "template": {
+          "date.$": "States.ArrayGetItem(States.StringSplit($.time, 'T'), 0)",
+          "reading.$": "$.reading.response.body",
+          "complete.$": "States.Format('{}?uid={}&completed_reading_id={}', $.detail.user_endpoint, $$.Map.Item.Value.uid, $.reading.response.uid)",
+          "unsubscribe.$": "States.Format('{}?unsubscribe={}', $.detail.user_endpoint, $$.Map.Item.Value.uid)"
+        }
+      },
+      "ItemProcessor": {
+        "ProcessorConfig": {
+          "Mode": "INLINE"
+        },
+        "StartAt": "SendTemplate",
+        "States": {
+          "SendTemplate": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::aws-sdk:ses:sendTemplatedEmail",
+            "Parameters": {
+              "Source.$": "$.source_email",
+              "Destination": {
+                "ToAddresses.$": "$.email"
+              },
+              "Template": "${EmailTemplate}",
+              "TemplateData.$": "States.JsonToString($.template)"
+            },
+            "ResultSelector": {
+              "message_id.$": "$.MessageId"
+            },
+            "ResultPath": "$.publish_result",
+            "OutputPath": "$",
+            "End": true
+          }
+        }
+      },
+      "End": true
+    },
     "SendNotification": {
       "Type": "Task",
       "Resource": "arn:aws:states:::sns:publish",
       "Parameters": {
         "TopicArn": "${Topic}",
-        "Subject.$": "States.Format('Daily Reading on {}', States.ArrayGetItem(States.StringSplit($.time, 'T'), 0))",
+        "Subject.$": "States.Format('${EmailSubject} on {}', States.ArrayGetItem(States.StringSplit($.time, 'T'), 0))",
         "Message.$": "$.reading.response.body"
       },
       "ResultSelector": {

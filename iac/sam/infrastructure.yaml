@@ -1,12 +1,14 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: API Gateway infrastructure template
+Description: Daily reading infrastructure
 Transform: AWS::Serverless-2016-10-31
 Parameters:
   pDomainNameRoot:
     Type: String
+  pDomainNameEmail:
+    Type: String
   pDomainNameApi:
     Type: String
-  pDomainNameEmail:
+  pEmailSubject:
     Type: String
   pHostedZoneId:
     Type: String
@@ -56,15 +58,25 @@ Resources:
           EngagementMetrics: ENABLED
         GuardianOptions:
           OptimizedSharedDelivery: ENABLED
-  # EmailIdentity:
-  #   Type: AWS::SES::EmailIdentity
-  #   Properties:
-  #     ConfigurationSetAttributes:
-  #       ConfigurationSetName: !Ref EmailConfiguration
-  #     EmailIdentity: !Ref pDomainNameRoot
-  #     MailFromAttributes:
-  #       BehaviorOnMxFailure: USE_DEFAULT_VALUE
-  #       MailFromDomain: !Ref pDomainNameEmail
+  EmailIdentity:
+    Type: AWS::SES::EmailIdentity
+    Properties:
+      ConfigurationSetAttributes:
+        ConfigurationSetName: !Ref EmailConfiguration
+      EmailIdentity: !Ref pDomainNameRoot
+      MailFromAttributes:
+        BehaviorOnMxFailure: USE_DEFAULT_VALUE
+        MailFromDomain: !Ref pDomainNameEmail
+  EmailTemplate:
+    Type: AWS::SES::Template
+    Properties:
+      Template:
+        SubjectPart: !Sub "${pEmailSubject} for {{date}}"
+        HtmlPart: "<p><a href='{{complete}}'>Click here when you've completed today's reading</a></p><p>{{reading}}</p><p>To unsubscribe, click <a href='{{unsubscribe}}'>here</a>.<p>"
 Outputs:
   outCertificateArn:
     Value: !Ref Certificate
+  outEmailIdentity:
+    Value: !Ref EmailIdentity
+  outEmailTemplate:
+    Value: !Ref EmailTemplate
