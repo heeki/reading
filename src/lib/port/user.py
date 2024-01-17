@@ -50,7 +50,7 @@ class UserPort:
         output = self.transform(response)
         return output
 
-    def list_users_by_group(self, group_id, is_subscribed):
+    def list_users_by_group(self, group_id, is_subscribed=None):
         filter_expression = "contains(group_ids, :group_id)"
         expression_values = {
             ":category": {"S": "user"},
@@ -68,7 +68,7 @@ class UserPort:
         output = self.transform(response)
         return output
 
-    def list_users_by_plan(self, plan_id, is_subscribed):
+    def list_users_by_plan(self, plan_id, is_subscribed=None):
         filter_expression = "contains(plan_ids, :plan_id)"
         expression_values = {
             ":category": {"S": "user"},

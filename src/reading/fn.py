@@ -19,12 +19,15 @@ def handler(event, context):
             uid = get_param(qsp, "uid")
             date = get_param(qsp, "date")
             user_id = get_param(qsp, "user_id")
+            group_id = get_param(qsp, "group_id")
             if uid is not None and user_id is not None:
                 output = reading.add_user_completion(uid, user_id)
             elif uid is not None and user_id is None:
                 output = reading.get_reading(uid)
             elif uid is None and user_id is not None:
                 output = reading.list_readings_by_user(user_id)
+            elif group_id is not None:
+                output = reading.list_readings_by_group(group_id)
             elif date is not None:
                 output = reading.get_reading_by_date(date)
             else:

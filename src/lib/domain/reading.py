@@ -1,10 +1,12 @@
 import json
 import uuid
 from lib.port.reading import ReadingPort
+from lib.port.user import UserPort
 
 class Reading:
     def __init__(self):
         self.port = ReadingPort()
+        self.user = UserPort()
 
     def list_readings(self):
         response = self.port.list_readings()
@@ -12,6 +14,15 @@ class Reading:
 
     def list_readings_by_user(self, user_id):
         response = self.port.list_readings_by_user(user_id)
+        return response
+
+    def list_readings_by_group(self, group_id):
+        users = self.user.list_users_by_group(group_id)
+        response = []
+        for user in users:
+            user_id = user["uid"]
+            user_readings = self.list_readings_by_user(user_id)
+            response += user_readings
         return response
 
     def get_reading(self, uid):

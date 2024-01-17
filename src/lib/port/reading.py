@@ -57,10 +57,10 @@ class ReadingPort:
     def list_readings_by_user(self, user_id):
         response = self.client.query(
             key_condition = "category = :category",
-            filter_expression="begins_with(read_by, :read_by)",
+            filter_expression="contains(read_by, :read_by)",
             expression_values = {
                 ":category": {"S": "reading"},
-                ":read_by": {"S": json.dumps({"user_id": user_id})[:-1]}
+                ":read_by": {"S": user_id}
             },
             projection_expression="category, uid, description, plan_id, sent_date, date_count, read_by"
         )
@@ -165,13 +165,15 @@ class ReadingPort:
         return output
 
     def add_user_completion(self, uid, user_id):
+        reading = self.get_reading(uid)
+        read_by = json.loads(reading.get("read_by", "[]"))
+        read_by.append({
+            "user_id": user_id,
+            "timestamp": datetime.datetime.now().isoformat()
+        })
         item_key = {
             "category": {"S": "reading"},
             "uid": {"S": uid}
-        }
-        read_by = {
-            "user_id": user_id,
-            "timestamp": datetime.datetime.now().isoformat()
         }
         try:
             response = self.client.update(

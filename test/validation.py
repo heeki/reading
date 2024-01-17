@@ -315,10 +315,14 @@ class Tests(unittest.TestCase):
         read_by = json.loads(response["read_by"])
         print(json.dumps(read_by))
         print("added user reading completion")
-        self.assertEqual(user_id, read_by["user_id"])
+        self.assertEqual(user_id, read_by[0]["user_id"])
 
         response = reading.list_readings_by_user(user_id)
-        print(json.dumps(response))
+        print("user reading count={}".format(len(response)))
+
+        group_id = "84db3228-0174-45bf-8b67-2e9c62b5ecf7"
+        response = reading.list_readings_by_group(group_id)
+        print("group reading count={}".format(len(response)))
 
         response = reading.delete_reading(uid)
 

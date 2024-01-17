@@ -130,6 +130,10 @@ test.subscribe:
 test.reading_by_user:
 	$(eval USER_IDS=$(shell curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/user | jq -r '.[].uid'))
 	for uid in ${USER_IDS}; do echo $$uid; curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/reading?user_id=$$uid | jq -c '.[]'; done
+test.reading_by_group:
+	$(eval GROUP_IDS=$(shell curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/group | jq -r '.[].uid'))
+	for uid in ${GROUP_IDS}; do echo $$uid; curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/reading?group_id=$$uid | jq -c '.[]'; done
+
 
 # cdk alternate
 cdk.synth:

@@ -10,11 +10,11 @@ class User:
         response = self.port.list_users()
         return response
 
-    def list_users_by_group(self, group_id, is_subscribed):
+    def list_users_by_group(self, group_id, is_subscribed=None):
         response = self.port.list_users_by_group(group_id, is_subscribed)
         return response
 
-    def list_users_by_plan(self, plan_id, is_subscribed):
+    def list_users_by_plan(self, plan_id, is_subscribed=None):
         response = self.port.list_users_by_plan(plan_id, is_subscribed)
         return response
 
