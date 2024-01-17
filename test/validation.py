@@ -261,7 +261,8 @@ class Tests(unittest.TestCase):
         user = User()
         for g in groups:
             group_id = g.get("uid")
-            response = user.list_users_by_group(group_id)
+            is_subscribed = True
+            response = user.list_users_by_group(group_id, is_subscribed)
             print(f"group_id={group_id} user_count={len(response)}")
         print("listed users by group_id")
 
@@ -273,7 +274,8 @@ class Tests(unittest.TestCase):
         user = User()
         for p in plans:
             plan_id = p.get("uid")
-            response = user.list_users_by_plan(plan_id)
+            is_subscribed = True
+            response = user.list_users_by_plan(plan_id, is_subscribed)
             print(f"plan_id={plan_id} user_count={len(response)}")
         print("listed users by plan_id")
 
