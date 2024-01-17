@@ -50,27 +50,39 @@ class UserPort:
         output = self.transform(response)
         return output
 
-    def list_users_by_group(self, group_id):
+    def list_users_by_group(self, group_id, is_subscribed):
+        filter_expression = "contains(group_ids, :group_id)"
+        expression_values = {
+            ":category": {"S": "user"},
+            ":group_id": {"S": group_id}
+        }
+        if is_subscribed is not None:
+            filter_expression += " and is_subscribed = :is_subscribed"
+            expression_values[":is_subscribed"] = {"BOOL": is_subscribed}
         response = self.client.query(
             key_condition = "category = :category",
-            filter_expression = "contains(group_ids, :group_id)",
-            expression_values = {
-                ":category": {"S": "user"},
-                ":group_id": {"S": group_id}
-            },
+            filter_expression = filter_expression,
+            expression_values = expression_values,
             projection_expression = "category, uid, description, email, is_subscribed, group_ids, plan_ids"
         )
         output = self.transform(response)
         return output
 
-    def list_users_by_plan(self, plan_id):
+    def list_users_by_plan(self, plan_id, is_subscribed):
+        filter_expression = "contains(plan_ids, :plan_id)"
+        expression_values = {
+            ":category": {"S": "user"},
+            ":plan_id": {"S": plan_id}
+        }
+        if is_subscribed is not None:
+            filter_expression += " and is_subscribed = :is_subscribed"
+            expression_values[":is_subscribed"] = {"BOOL": is_subscribed}
+        print(filter_expression)
+        print(json.dumps(expression_values))
         response = self.client.query(
             key_condition = "category = :category",
-            filter_expression = "contains(plan_ids, :plan_id)",
-            expression_values = {
-                ":category": {"S": "user"},
-                ":plan_id": {"S": plan_id}
-            },
+            filter_expression = filter_expression,
+            expression_values = expression_values,
             projection_expression = "category, uid, description, email, is_subscribed, group_ids, plan_ids"
         )
         output = self.transform(response)

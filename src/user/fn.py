@@ -21,12 +21,16 @@ def handler(event, context):
             plan_id = get_param(qsp, "plan_id")
             subscribe = get_param(qsp, "subscribe")
             unsubscribe = get_param(qsp, "unsubscribe")
+            is_subscribed = get_param(qsp, "is_subscribed")
+            if is_subscribed is not None:
+                print(json.dumps({"is_subscribed": is_subscribed}))
+                is_subscribed = is_subscribed == "true"
             if uid is not None:
                 output = user.get_user(uid)
             elif group_id is not None:
-                output = user.list_users_by_group(group_id)
+                output = user.list_users_by_group(group_id, is_subscribed)
             elif plan_id is not None:
-                output = user.list_users_by_plan(plan_id)
+                output = user.list_users_by_plan(plan_id, is_subscribed)
             elif subscribe is not None:
                 output = user.subscribe_user(subscribe)
             elif unsubscribe is not None:
