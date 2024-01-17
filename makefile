@@ -118,6 +118,12 @@ test.user_by_plan:
 	for uid in ${PLAN_IDS}; do echo $$uid; curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/user?plan_id=$$uid | jq -c 'map(del(.group_ids, .plan_ids)) | .[]'; done
 test.reading_by_date:
 	curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/reading?date=2023-12-29 | jq
+test.subscribe:
+	$(eval UID=$(shell curl -s -XPOST -H "content-type: application/json" -d @etc/user_post.json ${O_CUSTOM_ENDPOINT}/user | jq -r .uid))
+	curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/user?uid=${UID} | jq -c 'del(.group_ids, .plan_ids)'
+	curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/user?unsubscribe=${UID} | jq -c 'del(.group_ids, .plan_ids)'
+	curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/user?subscribe=${UID} | jq -c 'del(.group_ids, .plan_ids)'
+	curl -s -XDELETE -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/user?uid=${UID} | jq -c
 
 # cdk alternate
 cdk.synth:

@@ -72,7 +72,7 @@ Resources:
     Properties:
       Template:
         SubjectPart: !Sub "${pEmailSubject} for {{date}}"
-        HtmlPart: "<p><a href='{{complete}}'>Click here when you've completed today's reading</a></p><p>{{reading}}</p><p>To unsubscribe, click <a href='{{unsubscribe}}'>here</a>.<p>"
+        HtmlPart: "<p>{{reading}}</p><br><p><a href='{{complete}}'>Click here when you've completed today's reading</a>.</p><p>To unsubscribe, click <a href='{{unsubscribe}}'>here</a>.<p>"
 Outputs:
   outCertificateArn:
     Value: !Ref Certificate

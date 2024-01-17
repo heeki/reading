@@ -1,6 +1,7 @@
 {
     "description": "updated test user",
     "email": "updated@example.com",
+    "is_subscribed": false,
     "group_ids": ["a981e525-a2d3-49de-85c8-791035966b24"],
     "plan_ids": ["0136e456-0017-4f11-8a59-194bb1bff085"]
 }

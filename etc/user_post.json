@@ -1,6 +1,7 @@
 {
     "description": "initial test user",
     "email": "initial@example.com",
+    "is_subscribed": true,
     "group_ids": ["f179415c-c87d-4645-b44a-3f07034cd9a4"],
     "plan_ids": ["3def7b08-d3f9-45d9-b183-dd19d3f11a0f"]
 }

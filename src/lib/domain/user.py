@@ -26,15 +26,25 @@ class User:
         response = self.port.get_user_by_description(description)
         return response
 
-    def create_user(self, description, email, group_ids, plan_ids):
+    def create_user(self, description, email, is_subscribed, group_ids, plan_ids):
         uid = str(uuid.uuid4())
-        response = self.port.create_user(uid, description, email, group_ids, plan_ids)
+        response = self.port.create_user(uid, description, email, is_subscribed, group_ids, plan_ids)
         return response
 
-    def update_user(self, uid, description, email, group_ids, plan_ids):
-        response = self.port.update_user(uid, description, email, group_ids, plan_ids)
+    def update_user(self, uid, description, email, is_subscribed, group_ids, plan_ids):
+        response = self.port.update_user(uid, description, email, is_subscribed, group_ids, plan_ids)
         return response
 
     def delete_user(self, uid):
         response = self.port.delete_user(uid)
+        return response
+
+    def subscribe_user(self, uid):
+        user = self.get_user(uid)
+        response = self.update_user(uid, user.get("description"), user.get("email"), True, user.get("group_ids"), user.get("plan_ids"))
+        return response
+
+    def unsubscribe_user(self, uid):
+        user = self.get_user(uid)
+        response = self.update_user(uid, user.get("description"), user.get("email"), False, user.get("group_ids"), user.get("plan_ids"))
         return response

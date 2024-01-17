@@ -19,22 +19,28 @@ def handler(event, context):
             uid = get_param(qsp, "uid")
             group_id = get_param(qsp, "group_id")
             plan_id = get_param(qsp, "plan_id")
+            subscribe = get_param(qsp, "subscribe")
+            unsubscribe = get_param(qsp, "unsubscribe")
             if uid is not None:
                 output = user.get_user(uid)
             elif group_id is not None:
                 output = user.list_users_by_group(group_id)
             elif plan_id is not None:
                 output = user.list_users_by_plan(plan_id)
+            elif subscribe is not None:
+                output = user.subscribe_user(subscribe)
+            elif unsubscribe is not None:
+                output = user.unsubscribe_user(unsubscribe)
             else:
                 output = user.list_users()
         case "POST":
             body = get_body(event)
-            output = user.create_user(body.get("description"), body.get("email"), body.get("group_ids"), body.get("plan_ids"))
+            output = user.create_user(body.get("description"), body.get("email"), body.get("is_subscribed"), body.get("group_ids"), body.get("plan_ids"))
         case "PUT":
             uid = get_param(qsp, "uid")
             if uid is not None:
                 body = get_body(event)
-                output = user.update_user(uid, body.get("description"), body.get("email"), body.get("group_ids"), body.get("plan_ids"))
+                output = user.update_user(uid, body.get("description"), body.get("email"), body.get("is_subscribed"), body.get("group_ids"), body.get("plan_ids"))
         case "DELETE":
             uid = get_param(qsp, "uid")
             if uid is not None:
