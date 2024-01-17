@@ -77,8 +77,6 @@ class UserPort:
         if is_subscribed is not None:
             filter_expression += " and is_subscribed = :is_subscribed"
             expression_values[":is_subscribed"] = {"BOOL": is_subscribed}
-        print(filter_expression)
-        print(json.dumps(expression_values))
         response = self.client.query(
             key_condition = "category = :category",
             filter_expression = filter_expression,

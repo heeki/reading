@@ -23,7 +23,6 @@ def handler(event, context):
             unsubscribe = get_param(qsp, "unsubscribe")
             is_subscribed = get_param(qsp, "is_subscribed")
             if is_subscribed is not None:
-                print(json.dumps({"is_subscribed": is_subscribed}))
                 is_subscribed = is_subscribed == "true"
             if uid is not None:
                 output = user.get_user(uid)
