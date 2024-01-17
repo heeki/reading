@@ -299,6 +299,29 @@ class Tests(unittest.TestCase):
 
         response = reading.delete_reading(uid)
 
+    def test_reading_completion(self):
+        print()
+        reading = Reading()
+        new_reading_name = f"test reading {self.test_id}"
+        new_reading_body = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+        new_reading_plan_id = str(uuid.uuid4())
+        new_reading_sent_date = datetime.datetime.now().isoformat()
+        new_reading_sent_count = "1"
+        response = reading.create_reading(new_reading_name, new_reading_body, new_reading_plan_id, new_reading_sent_date, new_reading_sent_count)
+        uid = response["uid"]
+
+        user_id = "f975dc69-b0e9-41f1-bfb4-65fc877c10e9"
+        response = reading.add_user_completion(uid, user_id)
+        read_by = json.loads(response["read_by"])
+        print(json.dumps(read_by))
+        print("added user reading completion")
+        self.assertEqual(user_id, read_by["user_id"])
+
+        response = reading.list_readings_by_user(user_id)
+        print(json.dumps(response))
+
+        response = reading.delete_reading(uid)
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     suite.addTest(Tests("test_group"))
@@ -308,5 +331,6 @@ if __name__ == "__main__":
     suite.addTest(Tests("test_plan"))
     suite.addTest(Tests("test_reading"))
     suite.addTest(Tests("test_reading_by_date"))
+    suite.addTest(Tests("test_reading_completion"))
     runner = unittest.TextTestRunner()
     runner.run(suite)

@@ -1,3 +1,4 @@
+import datetime
 import json
 import os
 from botocore.exceptions import ClientError
@@ -12,13 +13,18 @@ class ReadingPort:
         output = {
             "category": item["category"]["S"],
             "uid": item["uid"]["S"],
-            "description": item["description"]["S"],
-            "plan_id": item["plan_id"]["S"],
-            "sent_date": item["sent_date"]["S"],
-            "sent_count": item["sent_count"]["N"]
+            "description": item["description"]["S"]
         }
         if "body" in item:
             output["body"] = item["body"]["S"]
+        if "plan_id" in item:
+            output["plan_id"] = item["plan_id"]["S"]
+        if "sent_date" in item:
+            output["sent_date"] = item["sent_date"]["S"]
+        if "sent_count" in item:
+            output["sent_count"] = item["sent_count"]["N"]
+        if "read_by" in item:
+            output["read_by"] = item["read_by"]["S"]
         return output
 
     def transform(self, item):
@@ -43,8 +49,20 @@ class ReadingPort:
             key_condition = "category = :category",
             expression_values = {
                 ":category": {"S": "reading"}
+            }
+        )
+        output = self.transform(response)
+        return output
+
+    def list_readings_by_user(self, user_id):
+        response = self.client.query(
+            key_condition = "category = :category",
+            filter_expression="begins_with(read_by, :read_by)",
+            expression_values = {
+                ":category": {"S": "reading"},
+                ":read_by": {"S": json.dumps({"user_id": user_id})[:-1]}
             },
-            projection_expression = "category, uid, description, plan_id, sent_date, sent_count"
+            projection_expression="category, uid, description, plan_id, sent_date, date_count, read_by"
         )
         output = self.transform(response)
         return output
@@ -55,8 +73,7 @@ class ReadingPort:
             expression_values = {
                 ":category": {"S": "reading"},
                 ":uid": {"S": uid}
-            },
-            projection_expression = "category, uid, description, body, plan_id, sent_date, sent_count"
+            }
         )
         transformed = self.transform(response)
         output = transformed[0] if len(transformed) > 0 else {}
@@ -69,8 +86,7 @@ class ReadingPort:
             expression_values = {
                 ":category": {"S": "reading"},
                 ":sent_date": {"S": date}
-            },
-            projection_expression = "category, uid, description, body, plan_id, sent_date, sent_count"
+            }
         )
         transformed = self.transform(response)
         output = transformed[0] if len(transformed) > 0 else {}
@@ -83,8 +99,7 @@ class ReadingPort:
             expression_values = {
                 ":category": {"S": "reading"},
                 ":description": {"S": description}
-            },
-            projection_expression = "category, uid, description, body, plan_id, sent_date, sent_count"
+            }
         )
         self.client.reset_index()
         transformed = self.transform(response)
@@ -147,4 +162,35 @@ class ReadingPort:
         }
         response = self.client.delete(item_key)
         output = {"uid": uid} if "Attributes" in response else {}
+        return output
+
+    def add_user_completion(self, uid, user_id):
+        item_key = {
+            "category": {"S": "reading"},
+            "uid": {"S": uid}
+        }
+        read_by = {
+            "user_id": user_id,
+            "timestamp": datetime.datetime.now().isoformat()
+        }
+        try:
+            response = self.client.update(
+                item_key,
+                update_expression="SET #read_by = :read_by",
+                condition_expression="#uid = :uid",
+                expression_names = {
+                    "#uid": "uid",
+                    "#read_by": "read_by"
+                },
+                expression_attributes = {
+                    ":uid": {"S": uid},
+                    ":read_by": {"S": json.dumps(read_by)}
+                }
+            )
+            output = self.transform(response)
+        except ClientError as e:
+            output = {
+                "error": e.response["Error"]["Code"],
+                "message": "requested uid not found"
+            }
         return output

@@ -75,15 +75,16 @@ class DynamoDBAdapter:
         )
         return response["Items"]
 
-    def _query(self, expression_values, key_condition, projection_expression, filter_expression=None, last_key=None):
+    def _query(self, expression_values, key_condition, projection_expression=None, filter_expression=None, last_key=None):
         kwargs = {
             "TableName": self.table,
             "ExpressionAttributeValues": expression_values,
-            "KeyConditionExpression": key_condition,
-            "ProjectionExpression": projection_expression
+            "KeyConditionExpression": key_condition
         }
         if self.index is not None:
             kwargs["IndexName"] = self.index
+        if projection_expression is not None:
+            kwargs["ProjectionExpression"] = projection_expression
         if filter_expression is not None:
             kwargs["FilterExpression"] = filter_expression
         if last_key is not None:
@@ -91,7 +92,7 @@ class DynamoDBAdapter:
         response = self.client.query(**kwargs)
         return response
 
-    def query(self, expression_values, key_condition, projection_expression, filter_expression=None):
+    def query(self, expression_values, key_condition, projection_expression=None, filter_expression=None):
         output = []
         response = self._query(expression_values, key_condition, projection_expression, filter_expression)
         output.extend(response["Items"])

@@ -10,6 +10,10 @@ class Reading:
         response = self.port.list_readings()
         return response
 
+    def list_readings_by_user(self, user_id):
+        response = self.port.list_readings_by_user(user_id)
+        return response
+
     def get_reading(self, uid):
         response = self.port.get_reading(uid)
         return response
@@ -33,4 +37,8 @@ class Reading:
 
     def delete_reading(self, uid):
         response = self.port.delete_reading(uid)
+        return response
+
+    def add_user_completion(self, uid, user_id):
+        response = self.port.add_user_completion(uid, user_id)
         return response

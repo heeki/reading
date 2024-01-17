@@ -156,7 +156,7 @@
         "template": {
           "date.$": "States.ArrayGetItem(States.StringSplit($.time, 'T'), 0)",
           "reading.$": "$.reading.response.body",
-          "complete.$": "States.Format('{}?uid={}&completed_reading_id={}', $.detail.user_endpoint, $$.Map.Item.Value.uid, $.reading.response.uid)",
+          "complete.$": "States.Format('{}?uid={}&user_id={}', $.detail.reading_endpoint, $.reading.response.uid, $$.Map.Item.Value.uid)",
           "unsubscribe.$": "States.Format('{}?unsubscribe={}', $.detail.user_endpoint, $$.Map.Item.Value.uid)"
         }
       },
