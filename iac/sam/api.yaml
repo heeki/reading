@@ -30,6 +30,8 @@ Parameters:
     Type: Number
   pFnTimeout:
     Type: Number
+  pRedirectUrl:
+    Type: String
 Resources:
   # DynamoDB
   Table:
@@ -234,6 +236,9 @@ Resources:
     Properties:
       CodeUri: ../../src/reading
       Role: !GetAtt FnRole.Arn
+      Environment:
+        Variables:
+          REDIRECT_URL: !Ref pRedirectUrl
       LoggingConfig:
         LogFormat: JSON
       Tags:

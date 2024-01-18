@@ -1,5 +1,6 @@
 import boto3
 import json
+import os
 from aws_xray_sdk.core import patch_all
 from lib.util import build_response, get_body, get_param, log_event
 from lib.domain.reading import Reading
@@ -7,12 +8,14 @@ from lib.domain.reading import Reading
 # initialization
 reading = Reading()
 patch_all()
+redirect_url = os.environ.get("REDIRECT_URL")
 
 def handler(event, context):
     log_event(event)
-    response = {}
     method = event.get("httpMethod", "GET")
     qsp = event.get("queryStringParameters")
+    response_code = 200
+    response_headers = {}
     output = {}
     match method:
         case "GET":
@@ -22,6 +25,9 @@ def handler(event, context):
             group_id = get_param(qsp, "group_id")
             if uid is not None and user_id is not None:
                 output = reading.add_user_completion(uid, user_id)
+                if redirect_url is not None:
+                    response_code = 302
+                    response_headers["Location"] = f"{redirect_url}?uid={user_id}"
             elif uid is not None and user_id is None:
                 output = reading.get_reading(uid)
             elif uid is None and user_id is not None:
@@ -44,5 +50,6 @@ def handler(event, context):
             uid = get_param(qsp, "uid")
             if uid is not None:
                 output = reading.delete_reading(uid)
-    response = build_response(200, json.dumps(output))
+    response = build_response(response_code, json.dumps(output), response_headers)
+    print(json.dumps(response))
     return response

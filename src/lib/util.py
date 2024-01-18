@@ -1,9 +1,12 @@
 import json
 
-def build_response(code, body):
+def build_response(code, body, extra_headers=None):
     headers = {
         "Content-Type": "application/json"
     }
+    if extra_headers is not None:
+        for header in extra_headers.keys():
+            headers[header] = extra_headers[header]
     response = {
         "isBase64Encoded": False,
         "statusCode": code,
