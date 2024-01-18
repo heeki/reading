@@ -44,7 +44,6 @@ Deploy the Scheduler resources: `make scheduler`
 
 After completing the deployment, update the following outputs:
 * `O_SF_ARN`: output Step Function workflow arn
-* `O_FN`: output Lambda function name
 
 ## Testing
 Test the function locally: `make sam.local.invoke`

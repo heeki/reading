@@ -29,12 +29,13 @@ O_TABLE_ARN=output-table-arn
 P_FN_LOCAL=FnGroup
 export TABLE=table-name
 
+P_SOURCE_EMAIL=source@mail.example.com
+P_SEND_TYPE=template
 P_ENDPOINT=https://api.example.com/reading
 P_PLAN_ID=plan_id_uuid
 P_API_KEY=tbd
 SCHEDULER_STACK=reading-scheduler
 SCHEDULER_TEMPLATE=iac/sam/scheduler.yaml
 SCHEDULER_OUTPUT=iac/sam/scheduler_output.yaml
-SCHEDULER_PARAMS="ParameterKey=pFnMemory,ParameterValue=${P_FN_MEMORY} ParameterKey=pFnTimeout,ParameterValue=${P_FN_TIMEOUT} ParameterKey=pEndpoint,ParameterValue=${P_ENDPOINT} ParameterKey=pPlanId,ParameterValue=${P_PLAN_ID} ParameterKey=pApiKey,ParameterValue=${P_API_KEY} ParameterKey=pEmailTemplate,ParameterValue=${O_EMAIL_TEMPLATE} ParameterKey=pEmailSubject,ParameterValue=${P_EMAIL_SUBJECT} ParameterKey=pDomainEmail,ParameterValue=${P_DOMAINNAME_EMAIL}"
+SCHEDULER_PARAMS="ParameterKey=pSourceEmail,ParameterValue=${P_SOURCE_EMAIL} ParameterKey=pSendType,ParameterValue=${P_SEND_TYPE} ParameterKey=pEndpoint,ParameterValue=${P_ENDPOINT} ParameterKey=pPlanId,ParameterValue=${P_PLAN_ID} ParameterKey=pApiKey,ParameterValue=${P_API_KEY} ParameterKey=pEmailTemplate,ParameterValue=${O_EMAIL_TEMPLATE} ParameterKey=pEmailSubject,ParameterValue=${P_EMAIL_SUBJECT} ParameterKey=pDomainEmail,ParameterValue=${P_DOMAINNAME_EMAIL}"
 O_SFN=output-step-function-arn
-O_FN=output-fn-name

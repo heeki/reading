@@ -13,10 +13,10 @@ Globals:
     Timeout: !Ref pFnTimeout
     Tracing: Active
 Parameters:
-  pFnMemory:
-    Type: Number
-  pFnTimeout:
-    Type: Number
+  pSourceEmail:
+    Type: String
+  pSendType:
+    Type: String
   pEndpoint:
     Type: String
   pPlanId:
@@ -65,17 +65,18 @@ Resources:
       FlexibleTimeWindow:
         Mode: "OFF"
       ScheduleExpression: cron(0 6 ? * MON-FRI *)
-      # ScheduleExpression: cron(0/1 * * * ? *)
       ScheduleExpressionTimezone: "America/New_York"
-      State: DISABLED
+      State: ENABLED
       Target:
         Arn: !GetAtt SFn.Arn
         RoleArn: !GetAtt EventsRole.Arn
         Input:
           Fn::ToJsonString:
+            source_email: !Ref pSourceEmail
             reading_endpoint: !Sub "${pEndpoint}/reading"
             user_endpoint: !Sub "${pEndpoint}/user"
             plan_id: !Ref pPlanId
+            send_type: !Ref pSendType
   Connection:
     Type: AWS::Events::Connection
     Properties:
@@ -175,15 +176,6 @@ Resources:
                 Condition:
                   StringLike:
                     "ses:FromAddress": !Join ["@", ["*", !Ref pDomainEmail]]
-        - PolicyName: lambda
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - lambda:InvokeFunction
-                Resource:
-                  - !GetAtt Fn.Arn
   SFn:
     Type: AWS::Serverless::StateMachine
     Properties:
@@ -212,66 +204,6 @@ Resources:
     Properties:
       LogGroupName: !Sub "/aws/sf/reading-scheduler"
       RetentionInDays: 7
-  # Lambda
-  FnRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - lambda.amazonaws.com
-            Action:
-              - sts:AssumeRole
-      Path: /
-      Policies:
-        - PolicyName: cloudwatch-insights
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:CreateLogGroup
-                Resource: '*'
-        - PolicyName: cloudwatch-logs
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                  - logs:DescribeLogStreams
-                Resource: 'arn:aws:logs:*:*:log-group:*:*'
-        - PolicyName: xray
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - xray:PutTraceSegments
-                  - xray:PutTelemetryRecords
-                  - xray:GetSamplingRules
-                  - xray:GetSamplingTargets
-                  - xray:GetSamplingStatisticSummaries
-                Resource: '*'
-  Fn:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: ../../src/reading
-      Handler: fn.handler
-      Role: !GetAtt FnRole.Arn
-      Tags:
-        application:group: reading
-        application:subgroup: scheduler
-        application:owner: heeki
-  FnLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub '/aws/lambda/${Fn}'
-      RetentionInDays: 7
 Outputs:
   outTopic:
     Value: !Ref Topic
@@ -281,5 +213,3 @@ Outputs:
     Value: !GetAtt Connection.Arn
   outSFn:
     Value: !Ref SFn
-  outFn:
-    Value: !Ref Fn
