@@ -167,32 +167,39 @@ class ReadingPort:
     def add_user_completion(self, uid, user_id):
         reading = self.get_reading(uid)
         read_by = json.loads(reading.get("read_by", "[]"))
-        read_by.append({
-            "user_id": user_id,
-            "timestamp": datetime.datetime.now().isoformat()
-        })
-        item_key = {
-            "category": {"S": "reading"},
-            "uid": {"S": uid}
-        }
-        try:
-            response = self.client.update(
-                item_key,
-                update_expression="SET #read_by = :read_by",
-                condition_expression="#uid = :uid",
-                expression_names = {
-                    "#uid": "uid",
-                    "#read_by": "read_by"
-                },
-                expression_attributes = {
-                    ":uid": {"S": uid},
-                    ":read_by": {"S": json.dumps(read_by)}
-                }
-            )
-            output = self.transform(response)
-        except ClientError as e:
-            output = {
-                "error": e.response["Error"]["Code"],
-                "message": "requested uid not found"
+        already_complete = False
+        for completion in read_by:
+            if completion["user_id"] == user_id:
+                already_complete = True
+        if not already_complete:
+            read_by.append({
+                "user_id": user_id,
+                "timestamp": datetime.datetime.now().isoformat()
+            })
+            item_key = {
+                "category": {"S": "reading"},
+                "uid": {"S": uid}
             }
+            try:
+                response = self.client.update(
+                    item_key,
+                    update_expression="SET #read_by = :read_by",
+                    condition_expression="#uid = :uid",
+                    expression_names = {
+                        "#uid": "uid",
+                        "#read_by": "read_by"
+                    },
+                    expression_attributes = {
+                        ":uid": {"S": uid},
+                        ":read_by": {"S": json.dumps(read_by)}
+                    }
+                )
+                output = self.transform(response)
+            except ClientError as e:
+                output = {
+                    "error": e.response["Error"]["Code"],
+                    "message": "requested uid not found"
+                }
+        else:
+            output = reading
         return output
