@@ -60,6 +60,13 @@ Resources:
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
+      Tags:
+        - Key: application:group
+          Value: reading
+        - Key: application:subgroup
+          Value: infrastructure
+        - Key: application:owner
+          Value: heeki
   # APIGW
   Api:
     Type: AWS::Serverless::Api
@@ -79,11 +86,22 @@ Resources:
           Name: AWS::Include
           Parameters:
             Location: ../openapi.yaml
+      Tags:
+        application:group: reading
+        application:subgroup: api
+        application:owner: heeki
   ApiLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "/aws/apigateway/reading-${Api}"
       RetentionInDays: 7
+      Tags:
+        - Key: application:group
+          Value: reading
+        - Key: application:subgroup
+          Value: api
+        - Key: application:owner
+          Value: heeki
   ApiMapping:
     DependsOn: Api
     Type: AWS::ApiGateway::BasePathMapping
@@ -179,6 +197,13 @@ Resources:
     Properties:
       LogGroupName: !Sub '/aws/lambda/${FnGroup}'
       RetentionInDays: 7
+      Tags:
+        - Key: application:group
+          Value: reading
+        - Key: application:subgroup
+          Value: group
+        - Key: application:owner
+          Value: heeki
   FnGroupPerm:
     Type: AWS::Lambda::Permission
     Properties:
@@ -202,6 +227,13 @@ Resources:
     Properties:
       LogGroupName: !Sub '/aws/lambda/${FnUser}'
       RetentionInDays: 7
+      Tags:
+        - Key: application:group
+          Value: reading
+        - Key: application:subgroup
+          Value: user
+        - Key: application:owner
+          Value: heeki
   FnUserPerm:
     Type: AWS::Lambda::Permission
     Properties:
@@ -225,6 +257,13 @@ Resources:
     Properties:
       LogGroupName: !Sub '/aws/lambda/${FnPlan}'
       RetentionInDays: 7
+      Tags:
+        - Key: application:group
+          Value: reading
+        - Key: application:subgroup
+          Value: plan
+        - Key: application:owner
+          Value: heeki
   FnPlanPerm:
     Type: AWS::Lambda::Permission
     Properties:
@@ -248,6 +287,13 @@ Resources:
     Properties:
       LogGroupName: !Sub '/aws/lambda/${FnReading}'
       RetentionInDays: 7
+      Tags:
+        - Key: application:group
+          Value: reading
+        - Key: application:subgroup
+          Value: reading
+        - Key: application:owner
+          Value: heeki
   FnReadingPerm:
     Type: AWS::Lambda::Permission
     Properties:

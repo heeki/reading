@@ -35,6 +35,13 @@ Resources:
     Type: AWS::SecretsManager::Secret
     Properties:
       SecretString: !Ref pApiKey
+      Tags:
+        - Key: application:group
+          Value: reading
+        - Key: application:subgroup
+          Value: infrastructure
+        - Key: application:owner
+          Value: heeki
   # Events
   EventsRole:
     Type: AWS::IAM::Role
@@ -93,7 +100,7 @@ Resources:
         - Key: application:group
           Value: reading
         - Key: application:subgroup
-          Value: scheduler
+          Value: infrastructure
         - Key: application:owner
           Value: heeki
   # Step Function
@@ -196,14 +203,21 @@ Resources:
         Tracing:
           Enabled: true
         Tags:
-            application:group: reading
-            application:subgroup: scheduler
-            application:owner: heeki
+          application:group: reading
+          application:subgroup: scheduler
+          application:owner: heeki
   SFnLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "/aws/sf/reading-scheduler"
       RetentionInDays: 7
+      Tags:
+        - Key: application:group
+          Value: reading
+        - Key: application:subgroup
+          Value: scheduler
+        - Key: application:owner
+          Value: heeki
 Outputs:
   outTopic:
     Value: !Ref Topic

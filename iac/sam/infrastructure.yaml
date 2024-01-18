@@ -22,6 +22,13 @@ Resources:
         - DomainName: !Ref pDomainNameApi
           HostedZoneId: !Ref pHostedZoneId
       ValidationMethod: DNS
+      Tags:
+        - Key: application:group
+          Value: reading
+        - Key: application:subgroup
+          Value: infrastructure
+        - Key: application:owner
+          Value: heeki
   Domain:
     Type: AWS::ApiGateway::DomainName
     Properties:
@@ -30,6 +37,13 @@ Resources:
         Types:
           - REGIONAL
       RegionalCertificateArn: !Ref Certificate
+      Tags:
+        - Key: application:group
+          Value: reading
+        - Key: application:subgroup
+          Value: api
+        - Key: application:owner
+          Value: heeki
   DomainRecordSet:
     Type: AWS::Route53::RecordSet
     Properties:
