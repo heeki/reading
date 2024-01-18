@@ -124,8 +124,16 @@ class UserPort:
             "group_ids": {"S": json.dumps(group_ids)},
             "plan_ids": {"S": json.dumps(plan_ids)}
         }
-        response = self.client.put(item)
-        output = {"uid": uid} if response["ResponseMetadata"]["HTTPStatusCode"] == 200 else {}
+        users = self.list_users()
+        # email_exists = any(user["email"] == email for user in users)
+        email_exists = False
+        for user in users:
+            if user["email"] == email:
+                email_exists = True
+                output = {"uid": user["uid"]}
+        if not email_exists:
+            response = self.client.put(item)
+            output = {"uid": uid} if response["ResponseMetadata"]["HTTPStatusCode"] == 200 else {}
         return output
 
     def update_user(self, uid, description, email, is_subscribed, group_ids, plan_ids):
