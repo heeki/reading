@@ -326,12 +326,20 @@ class Tests(unittest.TestCase):
 
         response = reading.delete_reading(uid)
 
+    def test_user_stats(self):
+        print()
+        user = User()
+        user_id = "f975dc69-b0e9-41f1-bfb4-65fc877c10e9"
+        response = user.get_user_stats(user_id)
+        print(json.dumps(response))
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     suite.addTest(Tests("test_group"))
     suite.addTest(Tests("test_user"))
     suite.addTest(Tests("test_user_by_group"))
     suite.addTest(Tests("test_user_by_plan"))
+    suite.addTest(Tests("test_user_stats"))
     suite.addTest(Tests("test_plan"))
     suite.addTest(Tests("test_reading"))
     suite.addTest(Tests("test_reading_by_date"))

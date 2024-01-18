@@ -16,10 +16,11 @@ class Action(Enum):
     LIST_USERS_BY_GROUP = 2
     LIST_USERS_BY_PLAN = 3
     GET_USER = 4
-    SUBSCRIBE_USER = 5
-    UNSUBSCRIBE_USER = 6
+    GET_USER_STATS = 5
+    SUBSCRIBE_USER = 6
+    UNSUBSCRIBE_USER = 7
 
-def get_action(qsp, uid, group_id, plan_id, subscribe, unsubscribe):
+def get_action(qsp, uid, group_id, plan_id, stats, subscribe, unsubscribe):
     response = Action.LIST_USERS
     if qsp is None:
         response = Action.LIST_USERS
@@ -29,6 +30,8 @@ def get_action(qsp, uid, group_id, plan_id, subscribe, unsubscribe):
         response = Action.LIST_USERS_BY_PLAN
     elif len(qsp) == 1 and uid is not None:
         response = Action.GET_USER
+    elif len(qsp) == 1 and stats is not None:
+        response = Action.GET_USER_STATS
     elif len(qsp) == 1 and subscribe is not None:
         response = Action.SUBSCRIBE_USER
     elif len(qsp) == 1 and unsubscribe is not None:
@@ -47,10 +50,11 @@ def handler(event, context):
             uid = get_param(qsp, "uid")
             group_id = get_param(qsp, "group_id")
             plan_id = get_param(qsp, "plan_id")
+            stats = get_param(qsp, "stats")
             subscribe = get_param(qsp, "subscribe")
             unsubscribe = get_param(qsp, "unsubscribe")
             is_subscribed = get_param(qsp, "is_subscribed") == "true"
-            action = get_action(qsp, uid, group_id, plan_id, subscribe, unsubscribe)
+            action = get_action(qsp, uid, group_id, plan_id, stats, subscribe, unsubscribe)
             match action:
                 case Action.LIST_USERS_BY_GROUP:
                     output = user.list_users_by_group(group_id, is_subscribed)
@@ -58,6 +62,8 @@ def handler(event, context):
                     output = user.list_users_by_plan(plan_id, is_subscribed)
                 case Action.GET_USER:
                     output = user.get_user(uid)
+                case Action.GET_USER_STATS:
+                    output = user.get_user_stats(stats)
                 case Action.SUBSCRIBE_USER:
                     output = user.subscribe_user(subscribe)
                     if redirect_url is not None:

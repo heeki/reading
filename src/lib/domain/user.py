@@ -1,10 +1,13 @@
+import datetime
 import json
 import uuid
+from lib.port.reading import ReadingPort
 from lib.port.user import UserPort
 
 class User:
     def __init__(self):
         self.port = UserPort()
+        self.reading_port = ReadingPort()
 
     def list_users(self):
         response = self.port.list_users()
@@ -47,4 +50,50 @@ class User:
     def unsubscribe_user(self, uid):
         user = self.get_user(uid)
         response = self.update_user(uid, user.get("description"), user.get("email"), False, user.get("group_ids"), user.get("plan_ids"))
+        return response
+
+    def _get_user_stats(self, uid):
+        readings = self.reading_port.list_readings_by_user(uid)
+        completions = []
+        for reading in readings:
+            read_timestamp = None
+            if "read_by" in reading:
+                read_by = json.loads(reading["read_by"])
+                for completion in read_by:
+                    if completion["user_id"] == uid:
+                        read_timestamp = completion["timestamp"]
+            if read_timestamp is not None:
+                completion = {
+                    "sent_date": str(datetime.datetime.fromisoformat(reading["sent_date"]).date()),
+                    "read_timestamp": read_timestamp
+                }
+                completions.append(completion)
+        response = {
+            "user_completion_count": len(readings),
+            "user_completion_timestamps": completions
+        }
+        return response
+
+    def get_user_stats(self, uid):
+        user = self.get_user(uid)
+        response = {
+            "user_id": uid,
+            "user_completion_count": 0,
+            "user_completion_timestamps": [],
+            "group_completion_count": 0,
+            "group_completion_count_per_reading": {}
+        }
+        for group in user["group_ids"]:
+            users = self.port.list_users_by_group(group)
+            for u in users:
+                user_stats = self._get_user_stats(u["uid"])
+                if u["uid"] == uid:
+                    response["user_completion_count"] = user_stats["user_completion_count"]
+                    response["user_completion_timestamps"] = user_stats["user_completion_timestamps"]
+                response["group_completion_count"] += user_stats["user_completion_count"]
+                for t in user_stats["user_completion_timestamps"]:
+                    if t["sent_date"] in response["group_completion_count_per_reading"]:
+                        response["group_completion_count_per_reading"][t["sent_date"]] += 1
+                    else:
+                        response["group_completion_count_per_reading"][t["sent_date"]] = 1
         return response
