@@ -1,14 +1,39 @@
-import boto3
 import json
 import os
 from aws_xray_sdk.core import patch_all
+from enum import Enum
 from lib.util import build_response, get_body, get_param, log_event
 from lib.domain.user import User
 
 # initialization
-user = User()
 patch_all()
+user = User()
 redirect_url = os.environ.get("REDIRECT_URL")
+
+# action
+class Action(Enum):
+    LIST_USERS = 1
+    LIST_USERS_BY_GROUP = 2
+    LIST_USERS_BY_PLAN = 3
+    GET_USER = 4
+    SUBSCRIBE_USER = 5
+    UNSUBSCRIBE_USER = 6
+
+def get_action(qsp, uid, group_id, plan_id, subscribe, unsubscribe):
+    response = Action.LIST_USERS
+    if qsp is None:
+        response = Action.LIST_USERS
+    elif len(qsp) == 1 and group_id is not None:
+        response = Action.LIST_USERS_BY_GROUP
+    elif len(qsp) == 1 and plan_id is not None:
+        response = Action.LIST_USERS_BY_PLAN
+    elif len(qsp) == 1 and uid is not None:
+        response = Action.GET_USER
+    elif len(qsp) == 1 and subscribe is not None:
+        response = Action.SUBSCRIBE_USER
+    elif len(qsp) == 1 and unsubscribe is not None:
+        response = Action.UNSUBSCRIBE_USER
+    return response
 
 def handler(event, context):
     log_event(event)
@@ -24,27 +49,27 @@ def handler(event, context):
             plan_id = get_param(qsp, "plan_id")
             subscribe = get_param(qsp, "subscribe")
             unsubscribe = get_param(qsp, "unsubscribe")
-            is_subscribed = get_param(qsp, "is_subscribed")
-            if is_subscribed is not None:
-                is_subscribed = is_subscribed == "true"
-            if uid is not None:
-                output = user.get_user(uid)
-            elif group_id is not None:
-                output = user.list_users_by_group(group_id, is_subscribed)
-            elif plan_id is not None:
-                output = user.list_users_by_plan(plan_id, is_subscribed)
-            elif subscribe is not None:
-                output = user.subscribe_user(subscribe)
-                if redirect_url is not None:
-                    response_code = 302
-                    response_headers["Location"] = f"{redirect_url}?uid={subscribe}"
-            elif unsubscribe is not None:
-                output = user.unsubscribe_user(unsubscribe)
-                if redirect_url is not None:
-                    response_code = 302
-                    response_headers["Location"] = f"{redirect_url}?uid={unsubscribe}"
-            else:
-                output = user.list_users()
+            is_subscribed = get_param(qsp, "is_subscribed") == "true"
+            action = get_action(qsp, uid, group_id, plan_id, subscribe, unsubscribe)
+            match action:
+                case Action.LIST_USERS_BY_GROUP:
+                    output = user.list_users_by_group(group_id, is_subscribed)
+                case Action.LIST_USERS_BY_PLAN:
+                    output = user.list_users_by_plan(plan_id, is_subscribed)
+                case Action.GET_USER:
+                    output = user.get_user(uid)
+                case Action.SUBSCRIBE_USER:
+                    output = user.subscribe_user(subscribe)
+                    if redirect_url is not None:
+                        response_code = 302
+                        response_headers["Location"] = f"{redirect_url}?uid={subscribe}"
+                case Action.UNSUBSCRIBE_USER:
+                    output = user.unsubscribe_user(unsubscribe)
+                    if redirect_url is not None:
+                        response_code = 302
+                        response_headers["Location"] = f"{redirect_url}?uid={unsubscribe}"
+                case _:
+                    output = user.list_users()
         case "POST":
             body = get_body(event)
             output = user.create_user(body.get("description"), body.get("email"), body.get("is_subscribed"), body.get("group_ids"), body.get("plan_ids"))
