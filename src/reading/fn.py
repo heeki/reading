@@ -51,5 +51,4 @@ def handler(event, context):
             if uid is not None:
                 output = reading.delete_reading(uid)
     response = build_response(response_code, json.dumps(output), response_headers)
-    print(json.dumps(response))
     return response

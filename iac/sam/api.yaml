@@ -7,6 +7,7 @@ Globals:
   Function:
     Environment:
       Variables:
+        REDIRECT_URL: !Ref pRedirectUrl
         TABLE: !Ref Table
     Handler: fn.handler
     Layers:
@@ -236,9 +237,6 @@ Resources:
     Properties:
       CodeUri: ../../src/reading
       Role: !GetAtt FnRole.Arn
-      Environment:
-        Variables:
-          REDIRECT_URL: !Ref pRedirectUrl
       LoggingConfig:
         LogFormat: JSON
       Tags:

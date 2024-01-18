@@ -1,5 +1,6 @@
 import boto3
 import json
+import os
 from aws_xray_sdk.core import patch_all
 from lib.util import build_response, get_body, get_param, log_event
 from lib.domain.user import User
@@ -7,12 +8,14 @@ from lib.domain.user import User
 # initialization
 user = User()
 patch_all()
+redirect_url = os.environ.get("REDIRECT_URL")
 
 def handler(event, context):
     log_event(event)
-    response = {}
     method = event.get("httpMethod", "GET")
     qsp = event.get("queryStringParameters")
+    response_code = 200
+    response_headers = {}
     output = {}
     match method:
         case "GET":
@@ -32,8 +35,14 @@ def handler(event, context):
                 output = user.list_users_by_plan(plan_id, is_subscribed)
             elif subscribe is not None:
                 output = user.subscribe_user(subscribe)
+                if redirect_url is not None:
+                    response_code = 302
+                    response_headers["Location"] = f"{redirect_url}?uid={subscribe}"
             elif unsubscribe is not None:
                 output = user.unsubscribe_user(unsubscribe)
+                if redirect_url is not None:
+                    response_code = 302
+                    response_headers["Location"] = f"{redirect_url}?uid={unsubscribe}"
             else:
                 output = user.list_users()
         case "POST":
@@ -48,5 +57,5 @@ def handler(event, context):
             uid = get_param(qsp, "uid")
             if uid is not None:
                 output = user.delete_user(uid)
-    response = build_response(200, json.dumps(output))
+    response = build_response(response_code, json.dumps(output), response_headers)
     return response
