@@ -76,7 +76,7 @@ test.group_invalid:
 	curl -s -XDELETE -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/group?uid=invalid | jq
 test.group_stats:
 	$(eval GROUP_IDS=$(shell curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/group | jq -r '.[].uid'))
-	for uid in ${GROUP_IDS}; do echo $$uid; curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/group?stats=$$uid | jq; done
+	for uid in ${GROUP_IDS}; do echo $$uid; curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/group?stats=$$uid | jq -c; done
 
 # testing user
 test.user:
@@ -108,7 +108,7 @@ test.user_subscribe:
 	curl -s -XDELETE -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/user?uid=${UID} | jq -c
 test.user_stats:
 	$(eval USER_IDS=$(shell curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/user | jq -r '.[].uid'))
-	for uid in ${USER_IDS}; do echo $$uid; curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/user?stats=$$uid | jq; done
+	for uid in ${USER_IDS}; do echo $$uid; curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/user?stats=$$uid | jq -c; done
 
 # testing plan
 test.plan:
