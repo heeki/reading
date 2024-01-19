@@ -52,7 +52,7 @@ class User:
         response = self.update_user(uid, user.get("description"), user.get("email"), False, user.get("group_ids"), user.get("plan_ids"))
         return response
 
-    def _get_user_stats(self, uid):
+    def get_user_stats(self, uid):
         readings = self.reading_port.list_readings_by_user(uid)
         completions = []
         for reading in readings:
@@ -69,31 +69,8 @@ class User:
                 }
                 completions.append(completion)
         response = {
+            "user_id": uid,
             "user_completion_count": len(readings),
             "user_completion_timestamps": completions
         }
-        return response
-
-    def get_user_stats(self, uid):
-        user = self.get_user(uid)
-        response = {
-            "user_id": uid,
-            "user_completion_count": 0,
-            "user_completion_timestamps": [],
-            "group_completion_count": 0,
-            "group_completion_count_per_reading": {}
-        }
-        for group in user["group_ids"]:
-            users = self.port.list_users_by_group(group)
-            for u in users:
-                user_stats = self._get_user_stats(u["uid"])
-                if u["uid"] == uid:
-                    response["user_completion_count"] = user_stats["user_completion_count"]
-                    response["user_completion_timestamps"] = user_stats["user_completion_timestamps"]
-                response["group_completion_count"] += user_stats["user_completion_count"]
-                for t in user_stats["user_completion_timestamps"]:
-                    if t["sent_date"] in response["group_completion_count_per_reading"]:
-                        response["group_completion_count_per_reading"][t["sent_date"]] += 1
-                    else:
-                        response["group_completion_count_per_reading"][t["sent_date"]] = 1
         return response

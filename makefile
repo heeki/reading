@@ -74,6 +74,9 @@ test.group_invalid:
 	curl -s -XPOST -H "content-type: application/json" -d @etc/group_invalid.json ${O_CUSTOM_ENDPOINT}/group | jq
 	curl -s -XPUT -H "content-type: application/json" -d @etc/group_put.json ${O_CUSTOM_ENDPOINT}/group?uid=invalid | jq
 	curl -s -XDELETE -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/group?uid=invalid | jq
+test.group_stats:
+	$(eval GROUP_IDS=$(shell curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/group | jq -r '.[].uid'))
+	for uid in ${GROUP_IDS}; do echo $$uid; curl -s -XGET -H "content-type: application/json" ${O_CUSTOM_ENDPOINT}/group?stats=$$uid | jq; done
 
 # testing user
 test.user:
