@@ -53,3 +53,7 @@ class Reading:
     def add_user_completion(self, uid, user_id):
         response = self.port.add_user_completion(uid, user_id)
         return response
+
+    def update_reading_sent_count(self, uid, sent_count):
+        response = self.port.update_reading_sent_count(uid, sent_count)
+        return response

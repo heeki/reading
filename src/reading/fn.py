@@ -18,8 +18,9 @@ class Action(Enum):
     GET_READING = 4
     GET_READING_BY_DATE = 5
     ADD_USER_COMPLETION = 6
+    UPDATE_SENT_COUNT = 7
 
-def get_action(qsp, uid, date, user_id, group_id):
+def get_action(qsp, uid, date, user_id, group_id, sent_count):
     response = Action.LIST_READINGS
     if qsp is None:
         response = Action.LIST_READINGS
@@ -33,6 +34,8 @@ def get_action(qsp, uid, date, user_id, group_id):
         response = Action.GET_READING_BY_DATE
     elif len(qsp) == 2 and uid is not None and user_id is not None:
         response = Action.ADD_USER_COMPLETION
+    elif len(qsp) == 2 and uid is not None and sent_count is not None:
+        response = Action.UPDATE_SENT_COUNT
     return response
 
 def handler(event, context):
@@ -48,7 +51,8 @@ def handler(event, context):
             date = get_param(qsp, "date")
             user_id = get_param(qsp, "user_id")
             group_id = get_param(qsp, "group_id")
-            action = get_action(qsp, uid, date, user_id, group_id)
+            sent_count = get_param(qsp, "sent_count")
+            action = get_action(qsp, uid, date, user_id, group_id, sent_count)
             match action:
                 case Action.LIST_READINGS_BY_USER:
                     output = reading.list_readings_by_user(user_id)
@@ -63,6 +67,8 @@ def handler(event, context):
                     if redirect_url is not None:
                         response_code = 302
                         response_headers["Location"] = f"{redirect_url}?uid={user_id}"
+                case Action.UPDATE_SENT_COUNT:
+                    output = reading.update_reading_sent_count(uid, sent_count)
                 case _:
                     output = reading.list_readings()
         case "POST":

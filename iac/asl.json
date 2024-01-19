@@ -144,7 +144,9 @@
           }
         }
       },
-      "End": true
+      "ResultPath": "$.email_result",
+      "OutputPath": "$",
+      "Next": "UpdateSentCount"
     },
     "MapTemplate": {
       "Type": "Map",
@@ -195,6 +197,45 @@
           }
         }
       },
+      "ResultPath": "$.email_result",
+      "OutputPath": "$",
+      "Next": "UpdateSentCount"
+    },
+    "UpdateSentCount": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::http:invoke",
+      "Parameters": {
+        "ApiEndpoint.$": "$.detail.reading_endpoint",
+        "Method": "GET",
+        "Authentication": {
+          "ConnectionArn": "${Connection}"
+        },
+        "Headers": {
+          "content-type": "application/json"
+        },
+        "QueryParameters": {
+          "uid.$": "$.reading.response.uid",
+          "sent_count.$": "States.ArrayLength($.email_result)"
+        }
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "BackoffRate": 2,
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "JitterStrategy": "FULL"
+        }
+      ],
+      "ResultSelector": {
+        "uid.$": "$.ResponseBody.uid",
+        "sent_date.$": "$.ResponseBody.sent_date",
+        "sent_count.$": "$.ResponseBody.sent_count"
+      },
+      "ResultPath": "$",
+      "OutputPath": "$",
       "End": true
     },
     "SendNotification": {

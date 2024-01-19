@@ -203,3 +203,30 @@ class ReadingPort:
         else:
             output = reading
         return output
+
+    def update_reading_sent_count(self, uid, sent_count):
+        item_key = {
+            "category": {"S": "reading"},
+            "uid": {"S": uid}
+        }
+        try:
+            response = self.client.update(
+                item_key,
+                update_expression="SET #sent_count = :sent_count",
+                condition_expression="#uid = :uid",
+                expression_names = {
+                    "#uid": "uid",
+                    "#sent_count": "sent_count"
+                },
+                expression_attributes = {
+                    ":uid": {"S": uid},
+                    ":sent_count": {"N": sent_count}
+                }
+            )
+            output = self.transform(response)
+        except ClientError as e:
+            output = {
+                "error": e.response["Error"]["Code"],
+                "message": "requested uid not found"
+            }
+        return output

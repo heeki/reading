@@ -336,6 +336,24 @@ class Tests(unittest.TestCase):
         response = user.get_user_stats(user_id)
         print(json.dumps(response))
 
+    def test_reading_sent_count(self):
+        print()
+        reading = Reading()
+        new_reading_name = f"test reading {self.test_id}"
+        new_reading_body = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
+        new_reading_plan_id = str(uuid.uuid4())
+        new_reading_sent_date = datetime.datetime.now().isoformat()
+        new_reading_sent_count = "0"
+        response = reading.create_reading(new_reading_name, new_reading_body, new_reading_plan_id, new_reading_sent_date, new_reading_sent_count)
+        uid = response["uid"]
+
+        updated_reading_sent_count = "5"
+        response = reading.update_reading_sent_count(uid, updated_reading_sent_count)
+        response = reading.get_reading(uid)
+        self.assertEqual(updated_reading_sent_count, response["sent_count"])
+
+        response = reading.delete_reading(uid)
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     suite.addTest(Tests("test_group"))
@@ -347,5 +365,6 @@ if __name__ == "__main__":
     suite.addTest(Tests("test_reading"))
     suite.addTest(Tests("test_reading_by_date"))
     suite.addTest(Tests("test_reading_completion"))
+    suite.addTest(Tests("test_reading_sent_count"))
     runner = unittest.TextTestRunner()
     runner.run(suite)
