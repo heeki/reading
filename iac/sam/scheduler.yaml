@@ -72,7 +72,7 @@ Resources:
     Properties:
       # ScheduleExpression: cron(0/1 * * * ? *)
       ScheduleExpression: cron(0 6 ? * MON-FRI *)
-      State: ENABLED
+      State: DISABLED
       Targets:
         - Id: reading-workflow
           Arn: !GetAtt SFn.Arn
@@ -98,14 +98,17 @@ Resources:
     Properties:
       FlexibleTimeWindow:
         Mode: "OFF"
+      # ScheduleExpression: cron(0/1 * * * ? *)
       ScheduleExpression: cron(0 6 ? * MON-FRI *)
       ScheduleExpressionTimezone: "America/New_York"
-      State: DISABLED
+      State: ENABLED
       Target:
         Arn: !GetAtt SFn.Arn
         RoleArn: !GetAtt EventsRole.Arn
         Input:
           Fn::ToJsonString:
+            id: "<aws.scheduler.execution-id>"
+            time: "<aws.scheduler.scheduled-time>"
             detail:
               source_email: !Ref pSourceEmail
               reading_endpoint: !Sub "${pEndpoint}/reading"
