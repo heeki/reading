@@ -130,7 +130,7 @@ class UserPort:
         for user in users:
             if user["email"] == email:
                 email_exists = True
-                output = {"uid": user["uid"]}
+                output = {"uid": user["uid"], "message": "email already exists, using existing uid"}
         if not email_exists:
             response = self.client.put(item)
             output = {"uid": uid} if response["ResponseMetadata"]["HTTPStatusCode"] == 200 else {}

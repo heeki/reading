@@ -79,10 +79,6 @@ def handler(event, context):
         case "POST":
             body = get_body(event)
             output = user.create_user(body.get("description"), body.get("email"), body.get("is_subscribed"), body.get("group_ids"), body.get("plan_ids"))
-            uid = output["uid"]
-            if redirect_url is not None:
-                response_code = 302
-                response_headers["Location"] = f"{redirect_url}?uid={uid}"
         case "PUT":
             uid = get_param(qsp, "uid")
             if uid is not None:
