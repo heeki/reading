@@ -132,12 +132,11 @@
             },
             "ResultPath": "$.publish_result",
             "OutputPath": "$",
-            "Next": "CleanUp"
+            "Next": "CleanUpEmail"
           },
-          "CleanUp": {
+          "CleanUpEmail": {
             "Type": "Pass",
             "Parameters": {
-              "date.$": "$.date",
               "email.$": "$.email[0]",
               "message_id.$": "$.publish_result.message_id"
             },
@@ -184,6 +183,14 @@
             },
             "ResultPath": "$.data.publish_result",
             "OutputPath": "$.data",
+            "Next": "CleanUpTemplate"
+          },
+          "CleanUpTemplate": {
+            "Type": "Pass",
+            "Parameters": {
+              "email.$": "$.email[0]",
+              "message_id.$": "$.publish_result.message_id"
+            },
             "End": true
           }
         }

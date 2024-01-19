@@ -52,6 +52,7 @@ Resources:
           - Effect: Allow
             Principal:
               Service:
+                - events.amazonaws.com
                 - scheduler.amazonaws.com
             Action:
               - sts:AssumeRole
@@ -66,6 +67,32 @@ Resources:
                   - states:StartExecution
                 Resource:
                   - !GetAtt SFn.Arn
+  Rule:
+    Type: AWS::Events::Rule
+    Properties:
+      # ScheduleExpression: cron(0/1 * * * ? *)
+      ScheduleExpression: cron(0 6 ? * MON-FRI *)
+      State: ENABLED
+      Targets:
+        - Id: reading-workflow
+          Arn: !GetAtt SFn.Arn
+          RoleArn: !GetAtt EventsRole.Arn
+          InputTransformer:
+            InputPathsMap:
+              id: "$.id"
+              source: "$.source"
+              time: "$.time"
+            InputTemplate:
+              Fn::ToJsonString:
+                id: "<id>"
+                source: "<source>"
+                time: "<time>"
+                detail:
+                  source_email: !Ref pSourceEmail
+                  reading_endpoint: !Sub "${pEndpoint}/reading"
+                  user_endpoint: !Sub "${pEndpoint}/user"
+                  plan_id: !Ref pPlanId
+                  send_type: !Ref pSendType
   Schedule:
     Type: AWS::Scheduler::Schedule
     Properties:
@@ -73,17 +100,18 @@ Resources:
         Mode: "OFF"
       ScheduleExpression: cron(0 6 ? * MON-FRI *)
       ScheduleExpressionTimezone: "America/New_York"
-      State: ENABLED
+      State: DISABLED
       Target:
         Arn: !GetAtt SFn.Arn
         RoleArn: !GetAtt EventsRole.Arn
         Input:
           Fn::ToJsonString:
-            source_email: !Ref pSourceEmail
-            reading_endpoint: !Sub "${pEndpoint}/reading"
-            user_endpoint: !Sub "${pEndpoint}/user"
-            plan_id: !Ref pPlanId
-            send_type: !Ref pSendType
+            detail:
+              source_email: !Ref pSourceEmail
+              reading_endpoint: !Sub "${pEndpoint}/reading"
+              user_endpoint: !Sub "${pEndpoint}/user"
+              plan_id: !Ref pPlanId
+              send_type: !Ref pSendType
   Connection:
     Type: AWS::Events::Connection
     Properties:
