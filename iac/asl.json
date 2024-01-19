@@ -152,7 +152,9 @@
       "ItemsPath": "$.users.response",
       "ItemSelector": {
         "source_email.$": "$.detail.source_email",
-        "email.$": "States.Array($$.Map.Item.Value.email)",
+        "data": {
+          "email.$": "States.Array($$.Map.Item.Value.email)"
+        },
         "template": {
           "date.$": "States.ArrayGetItem(States.StringSplit($.time, 'T'), 0)",
           "reading.$": "$.reading.response.body",
@@ -172,7 +174,7 @@
             "Parameters": {
               "Source.$": "$.source_email",
               "Destination": {
-                "ToAddresses.$": "$.email"
+                "ToAddresses.$": "$.data.email"
               },
               "Template": "${EmailTemplate}",
               "TemplateData.$": "States.JsonToString($.template)"
@@ -180,8 +182,8 @@
             "ResultSelector": {
               "message_id.$": "$.MessageId"
             },
-            "ResultPath": "$.publish_result",
-            "OutputPath": "$",
+            "ResultPath": "$.data.publish_result",
+            "OutputPath": "$.data",
             "End": true
           }
         }

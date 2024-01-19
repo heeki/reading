@@ -276,7 +276,10 @@ class Tests(unittest.TestCase):
             plan_id = p.get("uid")
             is_subscribed = True
             response = user.list_users_by_plan(plan_id, is_subscribed)
-            print(f"plan_id={plan_id} user_count={len(response)}")
+            print(f"plan_id={plan_id} user_count={len(response)} is_subscribed={is_subscribed}")
+            is_subscribed = False
+            response = user.list_users_by_plan(plan_id, is_subscribed)
+            print(f"plan_id={plan_id} user_count={len(response)} is_subscribed={is_subscribed}")
         print("listed users by plan_id")
 
     def test_reading_by_date(self):

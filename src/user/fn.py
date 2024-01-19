@@ -24,9 +24,9 @@ def get_action(qsp, uid, group_id, plan_id, stats, subscribe, unsubscribe):
     response = Action.LIST_USERS
     if qsp is None:
         response = Action.LIST_USERS
-    elif len(qsp) == 1 and group_id is not None:
+    elif (len(qsp) == 1 or len(qsp) == 2) and group_id is not None:
         response = Action.LIST_USERS_BY_GROUP
-    elif len(qsp) == 1 and plan_id is not None:
+    elif (len(qsp) == 1 or len(qsp) == 2) and plan_id is not None:
         response = Action.LIST_USERS_BY_PLAN
     elif len(qsp) == 1 and uid is not None:
         response = Action.GET_USER
