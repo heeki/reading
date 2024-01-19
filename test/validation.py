@@ -13,6 +13,7 @@ class Tests(unittest.TestCase):
     def setUp(self):
         self.test_id = str(uuid.uuid4())[-12:]
         self.invalid_uid = "invalid"
+        self.test_date = datetime.datetime(2024, 1, 1, 9, 0, 0).isoformat()
 
     def tearDown(self):
         pass
@@ -202,7 +203,7 @@ class Tests(unittest.TestCase):
         new_reading_name = f"test reading {self.test_id}"
         new_reading_body = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
         new_reading_plan_id = str(uuid.uuid4())
-        new_reading_sent_date = datetime.datetime.now().isoformat()
+        new_reading_sent_date = self.test_date
         new_reading_sent_count = "1"
         response = reading.create_reading(new_reading_name, new_reading_body, new_reading_plan_id, new_reading_sent_date, new_reading_sent_count)
         uid = response["uid"]
@@ -228,7 +229,7 @@ class Tests(unittest.TestCase):
         updated_reading_name = f"updated reading {self.test_id}"
         updated_reading_body = "Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem."
         updated_reading_plan_id = str(uuid.uuid4())
-        updated_reading_sent_date = datetime.datetime.now().isoformat()
+        updated_reading_sent_date = self.test_date
         updated_reading_sent_count = "1"
         response = reading.update_reading(uid, updated_reading_name, updated_reading_body, updated_reading_plan_id, updated_reading_sent_date, updated_reading_sent_count)
         self.assertEqual(updated_reading_name, response["description"])
@@ -308,7 +309,7 @@ class Tests(unittest.TestCase):
         new_reading_name = f"test reading {self.test_id}"
         new_reading_body = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
         new_reading_plan_id = str(uuid.uuid4())
-        new_reading_sent_date = datetime.datetime.now().isoformat()
+        new_reading_sent_date = self.test_date
         new_reading_sent_count = "1"
         response = reading.create_reading(new_reading_name, new_reading_body, new_reading_plan_id, new_reading_sent_date, new_reading_sent_count)
         uid = response["uid"]
@@ -335,6 +336,7 @@ class Tests(unittest.TestCase):
         user_id = "f975dc69-b0e9-41f1-bfb4-65fc877c10e9"
         response = user.get_user_stats(user_id)
         print(json.dumps(response))
+        print("printed user stats")
 
     def test_reading_sent_count(self):
         print()
@@ -342,7 +344,7 @@ class Tests(unittest.TestCase):
         new_reading_name = f"test reading {self.test_id}"
         new_reading_body = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
         new_reading_plan_id = str(uuid.uuid4())
-        new_reading_sent_date = datetime.datetime.now().isoformat()
+        new_reading_sent_date = self.test_date
         new_reading_sent_count = "0"
         response = reading.create_reading(new_reading_name, new_reading_body, new_reading_plan_id, new_reading_sent_date, new_reading_sent_count)
         uid = response["uid"]
