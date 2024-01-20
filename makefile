@@ -57,6 +57,7 @@ sf.list-executions:
 	aws --profile ${PROFILE} stepfunctions list-executions --state-machine-arn ${O_SF_ARN} | jq
 
 # testing endpoints
+test: test.group test.group_stats test.user test.user_by_group test.user_by_plan test.user_subscribe test.user_stats test.plan test.reading test.reading_by_date test.reading_by_user test.reading_by_group
 test.valid: test.group test.user test.plan test.reading
 test.invalid: test.group_invalid test.user_invalid test.plan_invalid test.reading_invalid
 test.by: test.user_by_group test.user_by_plan test.reading_by_date test.reading_by_user test.reading_by_group
