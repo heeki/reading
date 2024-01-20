@@ -76,6 +76,12 @@ class Tests(unittest.TestCase):
         response = group.delete_group(self.invalid_uid)
         self.assertEqual({}, response)
 
+    def test_group_stats(self):
+        print()
+        group = Group()
+        response = group.get_group_stats()
+        print(json.dumps(response))
+
     def test_user(self):
         # baseline
         user = User()
@@ -145,6 +151,43 @@ class Tests(unittest.TestCase):
         # delete invalid user
         response = user.delete_user(self.invalid_uid)
         self.assertEqual({}, response)
+
+    def test_user_by_group(self):
+        print()
+        group = Group()
+        groups = group.list_groups()
+
+        user = User()
+        for g in groups:
+            group_id = g.get("uid")
+            is_subscribed = True
+            response = user.list_users_by_group(group_id, is_subscribed)
+            print(f"group_id={group_id} user_count={len(response)}")
+        print("listed users by group_id")
+
+    def test_user_by_plan(self):
+        print()
+        plan = Plan()
+        plans = plan.list_plans()
+
+        user = User()
+        for p in plans:
+            plan_id = p.get("uid")
+            is_subscribed = True
+            response = user.list_users_by_plan(plan_id, is_subscribed)
+            print(f"plan_id={plan_id} user_count={len(response)} is_subscribed={is_subscribed}")
+            is_subscribed = False
+            response = user.list_users_by_plan(plan_id, is_subscribed)
+            print(f"plan_id={plan_id} user_count={len(response)} is_subscribed={is_subscribed}")
+        print("listed users by plan_id")
+
+    def test_user_stats(self):
+        print()
+        user = User()
+        user_id = "f975dc69-b0e9-41f1-bfb4-65fc877c10e9"
+        response = user.get_user_stats(user_id)
+        print(json.dumps(response))
+        print("printed user stats")
 
     def test_plan(self):
         # baseline
@@ -255,35 +298,6 @@ class Tests(unittest.TestCase):
         response = reading.delete_reading(self.invalid_uid)
         self.assertEqual({}, response)
 
-    def test_user_by_group(self):
-        print()
-        group = Group()
-        groups = group.list_groups()
-
-        user = User()
-        for g in groups:
-            group_id = g.get("uid")
-            is_subscribed = True
-            response = user.list_users_by_group(group_id, is_subscribed)
-            print(f"group_id={group_id} user_count={len(response)}")
-        print("listed users by group_id")
-
-    def test_user_by_plan(self):
-        print()
-        plan = Plan()
-        plans = plan.list_plans()
-
-        user = User()
-        for p in plans:
-            plan_id = p.get("uid")
-            is_subscribed = True
-            response = user.list_users_by_plan(plan_id, is_subscribed)
-            print(f"plan_id={plan_id} user_count={len(response)} is_subscribed={is_subscribed}")
-            is_subscribed = False
-            response = user.list_users_by_plan(plan_id, is_subscribed)
-            print(f"plan_id={plan_id} user_count={len(response)} is_subscribed={is_subscribed}")
-        print("listed users by plan_id")
-
     def test_reading_by_date(self):
         print()
         reading = Reading()
@@ -329,14 +343,6 @@ class Tests(unittest.TestCase):
 
         response = reading.delete_reading(uid)
 
-    def test_user_stats(self):
-        print()
-        user = User()
-        user_id = "f975dc69-b0e9-41f1-bfb4-65fc877c10e9"
-        response = user.get_user_stats(user_id)
-        print(json.dumps(response))
-        print("printed user stats")
-
     def test_reading_update_sent_count(self):
         print()
         reading = Reading()
@@ -358,12 +364,6 @@ class Tests(unittest.TestCase):
         print()
         reading = Reading()
         response = reading.get_current_sent_count()
-        print(json.dumps(response))
-
-    def test_group_stats(self):
-        print()
-        group = Group()
-        response = group.get_group_stats()
         print(json.dumps(response))
 
 if __name__ == "__main__":
