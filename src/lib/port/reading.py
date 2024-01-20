@@ -22,7 +22,7 @@ class ReadingPort:
         if "sent_date" in item:
             output["sent_date"] = item["sent_date"]["S"]
         if "sent_count" in item:
-            output["sent_count"] = item["sent_count"]["N"]
+            output["sent_count"] = item["sent_count"]["S"]
         if "read_by" in item:
             output["read_by"] = item["read_by"]["S"]
         return output
@@ -49,7 +49,8 @@ class ReadingPort:
             key_condition = "category = :category",
             expression_values = {
                 ":category": {"S": "reading"}
-            }
+            },
+            projection_expression="category, uid, description, plan_id, sent_date, sent_count, read_by"
         )
         output = self.transform(response)
         return output
@@ -62,7 +63,7 @@ class ReadingPort:
                 ":category": {"S": "reading"},
                 ":read_by": {"S": user_id}
             },
-            projection_expression="category, uid, description, plan_id, sent_date, date_count, read_by"
+            projection_expression="category, uid, description, plan_id, sent_date, sent_count, read_by"
         )
         output = self.transform(response)
         return output
@@ -114,7 +115,7 @@ class ReadingPort:
             "body": {"S": body},
             "plan_id": {"S": plan_id},
             "sent_date": {"S": sent_date},
-            "sent_count": {"N": sent_count}
+            "sent_count": {"S": json.dumps(sent_count)}
         }
         response = self.client.put(item)
         output = {"uid": uid} if response["ResponseMetadata"]["HTTPStatusCode"] == 200 else {}
@@ -144,7 +145,7 @@ class ReadingPort:
                     ":body": {"S": body},
                     ":plan_id": {"S": plan_id},
                     ":sent_date": {"S": sent_date},
-                    ":sent_count": {"N": sent_count}
+                    ":sent_count": {"S": json.dumps(sent_count)}
                 }
             )
             output = self.transform(response)
@@ -220,7 +221,7 @@ class ReadingPort:
                 },
                 expression_attributes = {
                     ":uid": {"S": uid},
-                    ":sent_count": {"N": sent_count}
+                    ":sent_count": {"S": json.dumps(sent_count)}
                 }
             )
             output = self.transform(response)

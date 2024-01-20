@@ -42,7 +42,9 @@ def handler(event, context):
                 case Action.GET_GROUP:
                     output = group.get_group(uid)
                 case Action.GET_GROUP_STATS:
-                    output = group.get_group_stats(stats)
+                    output = group.get_group_stats()
+                    if len(stats) == 36:
+                        output = output.get(stats, {})
                 case _:
                     output = group.list_groups()
         case "POST":

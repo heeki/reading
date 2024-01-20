@@ -15,6 +15,10 @@ class Tests(unittest.TestCase):
         self.invalid_uid = "invalid"
         self.test_date = datetime.datetime(2024, 1, 1, 9, 0, 0).isoformat()
 
+        group = Group()
+        groups = group.list_groups()
+        self.test_group_id = groups[0]["uid"]
+
     def tearDown(self):
         pass
 
@@ -204,7 +208,7 @@ class Tests(unittest.TestCase):
         new_reading_body = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
         new_reading_plan_id = str(uuid.uuid4())
         new_reading_sent_date = self.test_date
-        new_reading_sent_count = "1"
+        new_reading_sent_count = {self.test_group_id: 1}
         response = reading.create_reading(new_reading_name, new_reading_body, new_reading_plan_id, new_reading_sent_date, new_reading_sent_count)
         uid = response["uid"]
         self.assertIsNotNone(uid)
@@ -230,13 +234,13 @@ class Tests(unittest.TestCase):
         updated_reading_body = "Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem."
         updated_reading_plan_id = str(uuid.uuid4())
         updated_reading_sent_date = self.test_date
-        updated_reading_sent_count = "1"
+        updated_reading_sent_count = {self.test_group_id: 1}
         response = reading.update_reading(uid, updated_reading_name, updated_reading_body, updated_reading_plan_id, updated_reading_sent_date, updated_reading_sent_count)
         self.assertEqual(updated_reading_name, response["description"])
         self.assertEqual(updated_reading_body, response["body"])
         self.assertEqual(updated_reading_plan_id, response["plan_id"])
         self.assertEqual(updated_reading_sent_date, response["sent_date"])
-        self.assertEqual(updated_reading_sent_count, response["sent_count"])
+        self.assertEqual(json.dumps(updated_reading_sent_count), response["sent_count"])
         print(f"updated reading with uid={uid}")
 
         # update invalid reading
@@ -290,7 +294,7 @@ class Tests(unittest.TestCase):
         new_reading_body = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
         new_reading_plan_id = str(uuid.uuid4())
         new_reading_sent_date = datetime.datetime.now().isoformat()
-        new_reading_sent_count = "1"
+        new_reading_sent_count = {self.test_group_id: 1}
         response = reading.create_reading(new_reading_name, new_reading_body, new_reading_plan_id, new_reading_sent_date, new_reading_sent_count)
         uid = response["uid"]
 
@@ -310,7 +314,7 @@ class Tests(unittest.TestCase):
         new_reading_body = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
         new_reading_plan_id = str(uuid.uuid4())
         new_reading_sent_date = self.test_date
-        new_reading_sent_count = "1"
+        new_reading_sent_count = {self.test_group_id: 1}
         response = reading.create_reading(new_reading_name, new_reading_body, new_reading_plan_id, new_reading_sent_date, new_reading_sent_count)
         uid = response["uid"]
 
@@ -338,27 +342,40 @@ class Tests(unittest.TestCase):
         print(json.dumps(response))
         print("printed user stats")
 
-    def test_reading_sent_count(self):
+    def test_reading_update_sent_count(self):
         print()
         reading = Reading()
         new_reading_name = f"test reading {self.test_id}"
         new_reading_body = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
         new_reading_plan_id = str(uuid.uuid4())
         new_reading_sent_date = self.test_date
-        new_reading_sent_count = "0"
+        new_reading_sent_count = {self.test_group_id: 1}
         response = reading.create_reading(new_reading_name, new_reading_body, new_reading_plan_id, new_reading_sent_date, new_reading_sent_count)
         uid = response["uid"]
 
-        updated_reading_sent_count = "5"
+        updated_reading_sent_count = {self.test_group_id: 3}
         response = reading.update_reading_sent_count(uid, updated_reading_sent_count)
         response = reading.get_reading(uid)
-        self.assertEqual(updated_reading_sent_count, response["sent_count"])
+        self.assertEqual(json.dumps(updated_reading_sent_count), json.dumps(json.loads(response["sent_count"])))
 
         response = reading.delete_reading(uid)
+
+    def test_reading_current_sent_count(self):
+        print()
+        reading = Reading()
+        response = reading.get_current_sent_count()
+        print(json.dumps(response))
+
+    def test_group_stats(self):
+        print()
+        group = Group()
+        response = group.get_group_stats()
+        print(json.dumps(response))
 
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     suite.addTest(Tests("test_group"))
+    suite.addTest(Tests("test_group_stats"))
     suite.addTest(Tests("test_user"))
     suite.addTest(Tests("test_user_by_group"))
     suite.addTest(Tests("test_user_by_plan"))
@@ -367,6 +384,7 @@ if __name__ == "__main__":
     suite.addTest(Tests("test_reading"))
     suite.addTest(Tests("test_reading_by_date"))
     suite.addTest(Tests("test_reading_completion"))
-    suite.addTest(Tests("test_reading_sent_count"))
+    suite.addTest(Tests("test_reading_update_sent_count"))
+    suite.addTest(Tests("test_reading_current_sent_count"))
     runner = unittest.TextTestRunner()
     runner.run(suite)

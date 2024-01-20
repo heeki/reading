@@ -1,11 +1,13 @@
 import json
 import uuid
+from lib.domain.reading import Reading
 from lib.domain.user import User
 from lib.port.group import GroupPort
 
 class Group:
     def __init__(self):
         self.port = GroupPort()
+        self.reading_domain = Reading()
         self.user_domain = User()
 
     def list_groups(self):
@@ -33,7 +35,7 @@ class Group:
         response = self.port.delete_group(uid)
         return response
 
-    def get_group_stats(self, uid):
+    def _get_group_stats(self, uid):
         response = {
             "group_id": uid,
             "group_completion_count": 0,
@@ -48,4 +50,21 @@ class Group:
                     response["group_completion_count_per_reading"][completion["sent_date"]] += 1
                 else:
                     response["group_completion_count_per_reading"][completion["sent_date"]] = 1
+        return response
+
+    def get_group_stats(self):
+        response = {}
+        groups = self.list_groups()
+        for group in groups:
+            group_stats = self._get_group_stats(group["uid"])
+            response[group_stats["group_id"]] = {
+                "group_completion_count": group_stats["group_completion_count"],
+                "group_completion_count_per_reading": group_stats["group_completion_count_per_reading"]
+            }
+        sent_count = self.reading_domain.get_current_sent_count()
+        for group_id in sent_count.keys():
+            if group_id in response:
+                response[group_id]["sent_count"] = sent_count[group_id]
+            else:
+                response[group_id] = {"sent_count": sent_count[group_id]}
         return response

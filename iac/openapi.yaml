@@ -99,17 +99,26 @@ components:
         sent_date:
           type: string
         sent_count:
-          type: integer
-      required:
-        - description
-        - body
-        - plan_id
-        - sent_date
-        - sent_count
+          type: string
+        results:
+          type: array
+          items:
+            $ref: "#/components/schemas/result"
     readings:
       type: array
       items:
         $ref: "#/components/schemas/reading"
+    result:
+      type: object
+      properties:
+        user_id:
+          $ref: "#/components/schemas/uid"
+        group_id:
+          $ref: "#/components/schemas/uid"
+        message_id:
+          type: string
+        email:
+          type: string
   responses:
     error:
       description: internal server error
@@ -190,7 +199,7 @@ components:
             body: "example text"
             plan_id: "48b2f512-0a76-4bfc-90c8-7c9d7cf76205"
             sent_date: "2023-12-27T17:22:16.870919"
-            sent_count: 1
+            sent_count: "{\"48b2f512-0a76-4bfc-90c8-7c9d7cf76205\": 1}"
     readings:
       description: ok
       content:

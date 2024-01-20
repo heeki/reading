@@ -18,9 +18,8 @@ class Action(Enum):
     GET_READING = 4
     GET_READING_BY_DATE = 5
     ADD_USER_COMPLETION = 6
-    UPDATE_SENT_COUNT = 7
 
-def get_action(qsp, uid, date, user_id, group_id, sent_count):
+def get_action(qsp, uid, date, user_id, group_id):
     response = Action.LIST_READINGS
     if qsp is None:
         response = Action.LIST_READINGS
@@ -34,8 +33,6 @@ def get_action(qsp, uid, date, user_id, group_id, sent_count):
         response = Action.GET_READING_BY_DATE
     elif len(qsp) == 2 and uid is not None and user_id is not None:
         response = Action.ADD_USER_COMPLETION
-    elif len(qsp) == 2 and uid is not None and sent_count is not None:
-        response = Action.UPDATE_SENT_COUNT
     return response
 
 def handler(event, context):
@@ -51,8 +48,7 @@ def handler(event, context):
             date = get_param(qsp, "date")
             user_id = get_param(qsp, "user_id")
             group_id = get_param(qsp, "group_id")
-            sent_count = get_param(qsp, "sent_count")
-            action = get_action(qsp, uid, date, user_id, group_id, sent_count)
+            action = get_action(qsp, uid, date, user_id, group_id)
             match action:
                 case Action.LIST_READINGS_BY_USER:
                     output = reading.list_readings_by_user(user_id)
@@ -67,8 +63,6 @@ def handler(event, context):
                     if redirect_url is not None:
                         response_code = 302
                         response_headers["Location"] = f"{redirect_url}?uid={user_id}"
-                case Action.UPDATE_SENT_COUNT:
-                    output = reading.update_reading_sent_count(uid, sent_count)
                 case _:
                     output = reading.list_readings()
         case "POST":
@@ -78,7 +72,18 @@ def handler(event, context):
             uid = get_param(qsp, "uid")
             if uid is not None:
                 body = get_body(event)
-                output = reading.update_reading(uid, body.get("description"), body.get("body"), body.get("plan_id"), body.get("sent_date"), str(body.get("sent_count")))
+                results = body.get("results")
+                if results is not None:
+                    sent_count = {}
+                    for result in results:
+                        group_id = result["group_id"]
+                        if group_id in sent_count:
+                            sent_count[group_id] += 1
+                        else:
+                            sent_count[group_id] = 1
+                    output = reading.update_reading_sent_count(uid, sent_count)
+                else:
+                    output = reading.update_reading(uid, body.get("description"), body.get("body"), body.get("plan_id"), body.get("sent_date"), str(body.get("sent_count")))
         case "DELETE":
             uid = get_param(qsp, "uid")
             if uid is not None:

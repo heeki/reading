@@ -190,8 +190,8 @@ Resources:
                   - states:InvokeHTTPEndpoint
                 Resource: "*"
                 Condition:
-                  StringEquals:
-                    "states:HTTPMethod": "GET"
+                  ForAnyValue:StringEquals:
+                    "states:HTTPMethod": ["GET", "PUT"]
                   StringLike:
                     "states:HTTPEndpoint": !Join ["/", [!Ref pEndpoint, "*"]]
         - PolicyName: sns
