@@ -91,7 +91,6 @@ components:
           $ref: "#/components/schemas/uid"
         description:
           type: string
-          minLength: 2
         body:
           type: string
         plan_id:

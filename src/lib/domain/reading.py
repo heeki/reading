@@ -38,13 +38,13 @@ class Reading:
         response = self.port.get_reading_by_date(date)
         return response
 
-    def create_reading(self, description, body, plan_id, sent_date, sent_count):
+    def create_reading(self, description, body, plan_id, sent_date):
         uid = str(uuid.uuid4())
-        response = self.port.create_reading(uid, description, body, plan_id, sent_date, sent_count)
+        response = self.port.create_reading(uid, description, body, plan_id, sent_date)
         return response
 
-    def update_reading(self, uid, description, body, plan_id, sent_date, sent_count):
-        response = self.port.update_reading(uid, description, body, plan_id, sent_date, sent_count)
+    def update_reading(self, uid, description, body, plan_id, sent_date):
+        response = self.port.update_reading(uid, description, body, plan_id, sent_date)
         return response
 
     def delete_reading(self, uid):

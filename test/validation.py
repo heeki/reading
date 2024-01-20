@@ -208,8 +208,7 @@ class Tests(unittest.TestCase):
         new_reading_body = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
         new_reading_plan_id = str(uuid.uuid4())
         new_reading_sent_date = self.test_date
-        new_reading_sent_count = {self.test_group_id: 1}
-        response = reading.create_reading(new_reading_name, new_reading_body, new_reading_plan_id, new_reading_sent_date, new_reading_sent_count)
+        response = reading.create_reading(new_reading_name, new_reading_body, new_reading_plan_id, new_reading_sent_date)
         uid = response["uid"]
         self.assertIsNotNone(uid)
         updated_reading_count = len(reading.list_readings())
@@ -234,18 +233,16 @@ class Tests(unittest.TestCase):
         updated_reading_body = "Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem."
         updated_reading_plan_id = str(uuid.uuid4())
         updated_reading_sent_date = self.test_date
-        updated_reading_sent_count = {self.test_group_id: 1}
-        response = reading.update_reading(uid, updated_reading_name, updated_reading_body, updated_reading_plan_id, updated_reading_sent_date, updated_reading_sent_count)
+        response = reading.update_reading(uid, updated_reading_name, updated_reading_body, updated_reading_plan_id, updated_reading_sent_date)
         self.assertEqual(updated_reading_name, response["description"])
         self.assertEqual(updated_reading_body, response["body"])
         self.assertEqual(updated_reading_plan_id, response["plan_id"])
         self.assertEqual(updated_reading_sent_date, response["sent_date"])
-        self.assertEqual(json.dumps(updated_reading_sent_count), response["sent_count"])
         print(f"updated reading with uid={uid}")
 
         # update invalid reading
         updated_reading_name = f"updated reading {self.test_id}"
-        response = reading.update_reading(self.invalid_uid, updated_reading_name, updated_reading_body, updated_reading_plan_id, updated_reading_sent_date, updated_reading_sent_count)
+        response = reading.update_reading(self.invalid_uid, updated_reading_name, updated_reading_body, updated_reading_plan_id, updated_reading_sent_date)
         self.assertEqual("ConditionalCheckFailedException", response["error"])
 
         # delete reading
@@ -293,9 +290,8 @@ class Tests(unittest.TestCase):
         new_reading_name = f"test reading {self.test_id}"
         new_reading_body = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
         new_reading_plan_id = str(uuid.uuid4())
-        new_reading_sent_date = datetime.datetime.now().isoformat()
-        new_reading_sent_count = {self.test_group_id: 1}
-        response = reading.create_reading(new_reading_name, new_reading_body, new_reading_plan_id, new_reading_sent_date, new_reading_sent_count)
+        new_reading_sent_date = self.test_date
+        response = reading.create_reading(new_reading_name, new_reading_body, new_reading_plan_id, new_reading_sent_date)
         uid = response["uid"]
 
         response = reading.get_reading_by_date(new_reading_sent_date)
@@ -314,8 +310,7 @@ class Tests(unittest.TestCase):
         new_reading_body = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
         new_reading_plan_id = str(uuid.uuid4())
         new_reading_sent_date = self.test_date
-        new_reading_sent_count = {self.test_group_id: 1}
-        response = reading.create_reading(new_reading_name, new_reading_body, new_reading_plan_id, new_reading_sent_date, new_reading_sent_count)
+        response = reading.create_reading(new_reading_name, new_reading_body, new_reading_plan_id, new_reading_sent_date)
         uid = response["uid"]
 
         user_id = "f975dc69-b0e9-41f1-bfb4-65fc877c10e9"
@@ -349,8 +344,7 @@ class Tests(unittest.TestCase):
         new_reading_body = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
         new_reading_plan_id = str(uuid.uuid4())
         new_reading_sent_date = self.test_date
-        new_reading_sent_count = {self.test_group_id: 1}
-        response = reading.create_reading(new_reading_name, new_reading_body, new_reading_plan_id, new_reading_sent_date, new_reading_sent_count)
+        response = reading.create_reading(new_reading_name, new_reading_body, new_reading_plan_id, new_reading_sent_date)
         uid = response["uid"]
 
         updated_reading_sent_count = {self.test_group_id: 3}

@@ -67,7 +67,7 @@ def handler(event, context):
                     output = reading.list_readings()
         case "POST":
             body = get_body(event)
-            output = reading.create_reading(body.get("description"), body.get("body"), body.get("plan_id"), body.get("sent_date"), str(body.get("sent_count")))
+            output = reading.create_reading(body.get("description"), body.get("body"), body.get("plan_id"), body.get("sent_date"))
         case "PUT":
             uid = get_param(qsp, "uid")
             if uid is not None:
@@ -83,7 +83,7 @@ def handler(event, context):
                             sent_count[group_id] = 1
                     output = reading.update_reading_sent_count(uid, sent_count)
                 else:
-                    output = reading.update_reading(uid, body.get("description"), body.get("body"), body.get("plan_id"), body.get("sent_date"), str(body.get("sent_count")))
+                    output = reading.update_reading(uid, body.get("description"), body.get("body"), body.get("plan_id"), body.get("sent_date"))
         case "DELETE":
             uid = get_param(qsp, "uid")
             if uid is not None:

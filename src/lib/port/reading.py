@@ -107,21 +107,20 @@ class ReadingPort:
         output = transformed[0] if len(transformed) > 0 else {}
         return output
 
-    def create_reading(self, uid, description, body, plan_id, sent_date, sent_count):
+    def create_reading(self, uid, description, body, plan_id, sent_date):
         item = {
             "category": {"S": "reading"},
             "uid": {"S": uid},
             "description": {"S": description},
             "body": {"S": body},
             "plan_id": {"S": plan_id},
-            "sent_date": {"S": sent_date},
-            "sent_count": {"S": json.dumps(sent_count)}
+            "sent_date": {"S": sent_date}
         }
         response = self.client.put(item)
         output = {"uid": uid} if response["ResponseMetadata"]["HTTPStatusCode"] == 200 else {}
         return output
 
-    def update_reading(self, uid, description, body, plan_id, sent_date, sent_count):
+    def update_reading(self, uid, description, body, plan_id, sent_date):
         item_key = {
             "category": {"S": "reading"},
             "uid": {"S": uid}
@@ -129,23 +128,21 @@ class ReadingPort:
         try:
             response = self.client.update(
                 item_key,
-                update_expression="SET #description = :description, #body = :body, #plan_id = :plan_id, #sent_date = :sent_date, #sent_count = :sent_count",
+                update_expression="SET #description = :description, #body = :body, #plan_id = :plan_id, #sent_date = :sent_date",
                 condition_expression="#uid = :uid",
                 expression_names = {
                     "#uid": "uid",
                     "#description": "description",
                     "#body": "body",
                     "#plan_id": "plan_id",
-                    "#sent_date": "sent_date",
-                    "#sent_count": "sent_count"
+                    "#sent_date": "sent_date"
                 },
                 expression_attributes = {
                     ":uid": {"S": uid},
                     ":description": {"S": description},
                     ":body": {"S": body},
                     ":plan_id": {"S": plan_id},
-                    ":sent_date": {"S": sent_date},
-                    ":sent_count": {"S": json.dumps(sent_count)}
+                    ":sent_date": {"S": sent_date}
                 }
             )
             output = self.transform(response)
