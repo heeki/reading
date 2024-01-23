@@ -87,6 +87,7 @@ Resources:
           Name: AWS::Include
           Parameters:
             Location: ../openapi.yaml
+      TracingEnabled: true
       Tags:
         application:group: reading
         application:subgroup: api
