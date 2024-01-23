@@ -332,7 +332,7 @@ class Tests(unittest.TestCase):
         read_by = json.loads(response["read_by"])
         print(json.dumps(read_by))
         print("added user reading completion")
-        self.assertEqual(user_id, read_by[0]["user_id"])
+        self.assertIn(user_id, read_by)
 
         response = reading.list_readings_by_user(user_id)
         print("user reading count={}".format(len(response)))

@@ -164,16 +164,9 @@ class ReadingPort:
 
     def add_user_completion(self, uid, user_id):
         reading = self.get_reading(uid)
-        read_by = json.loads(reading.get("read_by", "[]"))
-        already_complete = False
-        for completion in read_by:
-            if completion["user_id"] == user_id:
-                already_complete = True
-        if not already_complete:
-            read_by.append({
-                "user_id": user_id,
-                "timestamp": datetime.datetime.now().isoformat()
-            })
+        read_by = json.loads(reading.get("read_by", "{}"))
+        if user_id not in read_by:
+            read_by[user_id] = datetime.datetime.now().isoformat()
             item_key = {
                 "category": {"S": "reading"},
                 "uid": {"S": uid}

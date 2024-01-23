@@ -74,13 +74,18 @@ def handler(event, context):
                 body = get_body(event)
                 results = body.get("results")
                 if results is not None:
-                    sent_count = {}
+                    sent_count = {
+                        "users": [],
+                        "groups": {}
+                    }
                     for result in results:
-                        group_id = result["group_id"]
-                        if group_id in sent_count:
-                            sent_count[group_id] += 1
+                        user_id = result.get("user_id")
+                        sent_count["users"].append(user_id)
+                        group_id = result.get("group_id")
+                        if group_id in sent_count["groups"]:
+                            sent_count["groups"][group_id] += 1
                         else:
-                            sent_count[group_id] = 1
+                            sent_count["groups"][group_id] = 1
                     output = reading.update_reading_sent_count(uid, sent_count)
                 else:
                     output = reading.update_reading(uid, body.get("description"), body.get("body"), body.get("plan_id"), body.get("sent_date"))
