@@ -1,13 +1,18 @@
+import boto3
 import json
+import logging
 import os
 from aws_xray_sdk.core import patch_all
 from enum import Enum
 from lib.util import build_response, get_body, get_param, log_event
 from lib.domain.user import User
+from lib.domain.analysis import Analysis
 
 # initialization
+boto3.set_stream_logger(name="botocore.credentials", level=logging.ERROR)
 patch_all()
 user = User()
+analysis = Analysis()
 redirect_url = os.environ.get("REDIRECT_URL")
 
 # action
@@ -63,7 +68,7 @@ def handler(event, context):
                 case Action.GET_USER:
                     output = user.get_user(uid)
                 case Action.GET_USER_STATS:
-                    output = user.get_user_stats(stats)
+                    output = analysis.get_user_stats(stats)
                 case Action.SUBSCRIBE_USER:
                     output = user.subscribe_user(subscribe)
                     if redirect_url is not None:

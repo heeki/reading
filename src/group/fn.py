@@ -1,13 +1,18 @@
+import boto3
 import json
+import logging
 import os
 from aws_xray_sdk.core import patch_all
 from enum import Enum
 from lib.util import build_response, get_body, get_param, log_event
 from lib.domain.group import Group
+from lib.domain.analysis import Analysis
 
 # initialization
+boto3.set_stream_logger(name="botocore.credentials", level=logging.ERROR)
 patch_all()
 group = Group()
+analysis = Analysis()
 redirect_url = os.environ.get("REDIRECT_URL")
 
 # action
@@ -42,7 +47,7 @@ def handler(event, context):
                 case Action.GET_GROUP:
                     output = group.get_group(uid)
                 case Action.GET_GROUP_STATS:
-                    output = group.get_group_stats()
+                    output = analysis.get_group_stats()
                     if len(stats) == 36:
                         output = output.get(stats, {})
                 case _:

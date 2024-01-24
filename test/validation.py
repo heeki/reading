@@ -8,6 +8,7 @@ from lib.domain.group import Group
 from lib.domain.user import User
 from lib.domain.plan import Plan
 from lib.domain.reading import Reading
+from lib.domain.analysis import Analysis
 
 class Tests(unittest.TestCase):
     def setUp(self):
@@ -78,8 +79,8 @@ class Tests(unittest.TestCase):
 
     def test_group_stats(self):
         print()
-        group = Group()
-        response = group.get_group_stats()
+        analysis = Analysis()
+        response = analysis.get_group_stats()
         print(json.dumps(response))
 
     def test_user(self):
@@ -183,9 +184,9 @@ class Tests(unittest.TestCase):
 
     def test_user_stats(self):
         print()
-        user = User()
+        analysis = Analysis()
         user_id = "f975dc69-b0e9-41f1-bfb4-65fc877c10e9"
-        response = user.get_user_stats(user_id)
+        response = analysis.get_user_stats(user_id)
         print(json.dumps(response))
         print("printed user stats")
 
@@ -360,10 +361,14 @@ class Tests(unittest.TestCase):
 
         response = reading.delete_reading(uid)
 
-    def test_reading_current_sent_count(self):
+    def test_reading_get_sent_count(self):
         print()
         reading = Reading()
-        response = reading.get_current_sent_count()
+        readings = reading.list_readings()
+        response = {}
+        for r in readings:
+            reading_id = r["uid"]
+            response[reading_id] = reading.get_sent_count(r["uid"])
         print(json.dumps(response))
 
 if __name__ == "__main__":
@@ -379,6 +384,6 @@ if __name__ == "__main__":
     suite.addTest(Tests("test_reading_by_date"))
     suite.addTest(Tests("test_reading_completion"))
     suite.addTest(Tests("test_reading_update_sent_count"))
-    suite.addTest(Tests("test_reading_current_sent_count"))
+    suite.addTest(Tests("test_reading_get_sent_count"))
     runner = unittest.TextTestRunner()
     runner.run(suite)

@@ -1,4 +1,6 @@
+import boto3
 import json
+import logging
 import os
 from aws_xray_sdk.core import patch_all
 from enum import Enum
@@ -6,6 +8,7 @@ from lib.util import build_response, get_body, get_param, log_event
 from lib.domain.plan import Plan
 
 # initialization
+boto3.set_stream_logger(name="botocore.credentials", level=logging.ERROR)
 patch_all()
 plan = Plan()
 redirect_url = os.environ.get("REDIRECT_URL")

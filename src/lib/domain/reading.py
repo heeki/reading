@@ -59,21 +59,20 @@ class Reading:
         response = self.port.update_reading_sent_count(uid, sent_count)
         return response
 
-    def get_current_sent_count(self):
-        readings = self.list_readings()
+    def get_sent_count(self, uid):
+        reading = self.get_reading(uid)
         today = datetime.datetime.now().date()
         response = {}
-        for reading in readings:
-            reading_date = datetime.datetime.fromisoformat(reading["sent_date"]).date()
-            if reading_date <= today and "sent_count" in reading:
-                date_key = str(reading_date)
-                sent_count = json.loads(reading["sent_count"])
-                for group_id in sent_count.keys():
-                    if group_id in response:
-                        if date_key in response[group_id]:
-                            response[group_id][date_key] += sent_count[group_id]
-                        else:
-                            response[group_id][date_key] = sent_count[group_id]
+        reading_date = datetime.datetime.fromisoformat(reading["sent_date"]).date()
+        if reading_date <= today and "sent_count" in reading:
+            date_key = str(reading_date)
+            sent_count = json.loads(reading["sent_count"])
+            for group_id in sent_count.keys():
+                if group_id in response:
+                    if date_key in response[group_id]:
+                        response[group_id][date_key] += sent_count[group_id]
                     else:
-                        response[group_id] = {date_key: sent_count[group_id]}
+                        response[group_id][date_key] = sent_count[group_id]
+                else:
+                    response[group_id] = {date_key: sent_count[group_id]}
         return response
