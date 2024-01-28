@@ -179,3 +179,30 @@ class UserPort:
         response = self.client.delete(item_key)
         output = {"uid": uid} if "Attributes" in response else {}
         return output
+
+    def update_subscription(self, uid, is_subscribed=False):
+        item_key = {
+            "category": {"S": "user"},
+            "uid": {"S": uid}
+        }
+        output = {"message": "uid not found"}
+        try:
+            response = self.client.update(
+                item_key,
+                update_expression="SET #is_subscribed = :is_subscribed",
+                condition_expression="uid = :uid",
+                expression_names={
+                    "#is_subscribed": "is_subscribed"
+                },
+                expression_attributes={
+                    ":uid": {"S": uid},
+                    ":is_subscribed": {"BOOL": is_subscribed},
+                }
+            )
+            output = self.transform(response)
+        except ClientError as e:
+            output = {
+                "error": e.response["Error"]["Code"],
+                "message": "requested uid not found"
+            }
+        return output

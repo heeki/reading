@@ -41,10 +41,10 @@ class User:
 
     def subscribe_user(self, uid):
         user = self.get_user(uid)
-        response = self.update_user(uid, user.get("description"), user.get("email"), True, user.get("group_ids"), user.get("plan_ids"))
+        response = self.port.update_subscription(uid, is_subscribed=True)
         return response
 
     def unsubscribe_user(self, uid):
         user = self.get_user(uid)
-        response = self.update_user(uid, user.get("description"), user.get("email"), False, user.get("group_ids"), user.get("plan_ids"))
+        response = self.port.update_subscription(uid, is_subscribed=False)
         return response
