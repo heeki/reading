@@ -9,6 +9,7 @@ from lib.domain.user import User
 from lib.domain.plan import Plan
 from lib.domain.reading import Reading
 from lib.domain.analysis import Analysis
+from lib.domain.backup import Backup
 
 class Tests(unittest.TestCase):
     def setUp(self):
@@ -371,6 +372,13 @@ class Tests(unittest.TestCase):
             response[reading_id] = reading.get_sent_count(r["uid"])
         print(json.dumps(response))
 
+    def test_backup(self):
+        print()
+        backup = Backup()
+        response = backup.backup()
+        with open("tmp/backup.json", "w", encoding="utf-8") as f:
+            f.write(json.dumps(response))
+
 if __name__ == "__main__":
     suite = unittest.TestSuite()
     suite.addTest(Tests("test_group"))
@@ -385,5 +393,6 @@ if __name__ == "__main__":
     suite.addTest(Tests("test_reading_completion"))
     suite.addTest(Tests("test_reading_update_sent_count"))
     suite.addTest(Tests("test_reading_get_sent_count"))
+    suite.addTest(Tests("test_backup"))
     runner = unittest.TextTestRunner()
     runner.run(suite)

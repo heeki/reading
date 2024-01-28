@@ -73,7 +73,7 @@ class DynamoDBAdapter:
         response = self.client.scan(
             TableName=self.table
         )
-        return response["Items"]
+        return response
 
     def _query(self, expression_values, key_condition, projection_expression=None, filter_expression=None, last_key=None):
         kwargs = {
