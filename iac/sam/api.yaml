@@ -98,7 +98,7 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "/aws/apigateway/reading-${Api}"
-      RetentionInDays: 7
+      # RetentionInDays: 7
       Tags:
         - Key: application:group
           Value: reading
@@ -201,7 +201,7 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub '/aws/lambda/${FnGroup}'
-      RetentionInDays: 7
+      # RetentionInDays: 7
       Tags:
         - Key: application:group
           Value: reading
@@ -232,7 +232,7 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub '/aws/lambda/${FnUser}'
-      RetentionInDays: 7
+      # RetentionInDays: 7
       Tags:
         - Key: application:group
           Value: reading
@@ -262,7 +262,7 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub '/aws/lambda/${FnPlan}'
-      RetentionInDays: 7
+      # RetentionInDays: 7
       Tags:
         - Key: application:group
           Value: reading
@@ -292,7 +292,7 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub '/aws/lambda/${FnReading}'
-      RetentionInDays: 7
+      # RetentionInDays: 7
       Tags:
         - Key: application:group
           Value: reading

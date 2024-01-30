@@ -1,0 +1,159 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Backups for the reading application
+Transform:
+  - AWS::Serverless-2016-10-31
+  - AWS::LanguageExtensions
+Globals:
+  Function:
+    Environment:
+      Variables:
+        BACKUP_BUCKET: !Ref Bucket
+        TABLE: !Select ["1", !Split ["/", !Ref pTableArn]]
+    Handler: fn.handler
+    Layers:
+      - arn:aws:lambda:us-east-1:546275881527:layer:xray-python3:3
+      - arn:aws:lambda:us-east-1:580247275435:layer:LambdaInsightsExtension:38
+      - !Ref pLayerLibrariesArn
+    MemorySize: !Ref pFnMemory
+    Runtime: python3.11
+    Timeout: !Ref pFnTimeout
+    Tracing: Active
+Parameters:
+  pFnMemory:
+    Type: Number
+  pFnTimeout:
+    Type: Number
+  pLayerLibrariesArn:
+    Type: String
+  pTableArn:
+    Type: String
+Resources:
+  # Bucket
+  Bucket:
+    Type: AWS::S3::Bucket
+  # Events
+  EventsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - scheduler.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: lambda
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:Invoke
+                Resource:
+                  - !GetAtt FnBackup.Arn
+  Schedule:
+    Type: AWS::Scheduler::Schedule
+    Properties:
+      FlexibleTimeWindow:
+        Mode: "OFF"
+      ScheduleExpression: cron(0 0 * * ? *)
+      ScheduleExpressionTimezone: "America/New_York"
+      State: ENABLED
+      Target:
+        Arn: !GetAtt FnBackup.Arn
+        RoleArn: !GetAtt EventsRole.Arn
+  # Lambda
+  FnRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: cloudwatch-insights
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                Resource: '*'
+        - PolicyName: cloudwatch-logs
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - logs:DescribeLogStreams
+                Resource: 'arn:aws:logs:*:*:log-group:*:*'
+        - PolicyName: xray
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - xray:PutTraceSegments
+                  - xray:PutTelemetryRecords
+                  - xray:GetSamplingRules
+                  - xray:GetSamplingTargets
+                  - xray:GetSamplingStatisticSummaries
+                Resource: '*'
+        - PolicyName: dynamodb
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:Scan
+                Resource: !Ref pTableArn
+        - PolicyName: s3
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                Resource: !Join ['/', [!GetAtt Bucket.Arn, '*']]
+  FnBackup:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../../src/backup
+      Role: !GetAtt FnRole.Arn
+      LoggingConfig:
+        LogFormat: JSON
+      Tags:
+        application:group: reading
+        application:subgroup: backup
+        application:owner: heeki
+  FnBackupLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${FnBackup}'
+      Tags:
+        - Key: application:group
+          Value: reading
+        - Key: application:subgroup
+          Value: backup
+        - Key: application:owner
+          Value: heeki
+Outputs:
+  outBucket:
+    Value: !GetAtt Bucket.Arn
+  outSchedule:
+    Value: !Ref Schedule
+  outFnBackup:
+    Value: !Ref FnBackup

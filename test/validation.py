@@ -377,7 +377,11 @@ class Tests(unittest.TestCase):
         for r in readings:
             reading_id = r["uid"]
             response[reading_id] = reading.get_sent_count(r["uid"])
-        print(json.dumps(response))
+        for r in response.keys():
+            if "users" in response[r]:
+                for timestamp in response[r]["users"]:
+                    sent_count_users = len(response[r]["users"][timestamp])
+                    print(f"reading={r} sent_count_users={sent_count_users}")
 
     def test_backup(self):
         print()

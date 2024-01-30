@@ -241,7 +241,7 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "/aws/sf/reading-scheduler"
-      RetentionInDays: 7
+      # RetentionInDays: 7
       Tags:
         - Key: application:group
           Value: reading

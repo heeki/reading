@@ -56,6 +56,15 @@ sf.invoke:
 sf.list-executions:
 	aws --profile ${PROFILE} stepfunctions list-executions --state-machine-arn ${O_SF_ARN} | jq
 
+# backup
+backup: backup.package backup.deploy
+backup.package:
+	sam package -t ${BACKUP_TEMPLATE} --output-template-file ${BACKUP_OUTPUT} --s3-bucket ${BUCKET} --s3-prefix ${BACKUP_STACK}
+backup.deploy:
+	sam deploy -t ${BACKUP_OUTPUT} --stack-name ${BACKUP_STACK} --parameter-overrides ${BACKUP_PARAMS} --capabilities CAPABILITY_NAMED_IAM
+backup.delete:
+	sam delete --stack-name ${BACKUP_STACK}
+
 # testing endpoints
 test: test.group test.group_stats test.user test.user_by_group test.user_by_plan test.user_subscribe test.user_stats test.plan test.reading test.reading_by_date test.reading_by_user test.reading_by_group
 test.valid: test.group test.user test.plan test.reading
