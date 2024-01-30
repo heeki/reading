@@ -1,4 +1,5 @@
 import boto3
+import datetime
 import json
 import logging
 import os
@@ -9,6 +10,9 @@ from lib.domain.group import Group
 from lib.domain.analysis import Analysis
 
 # initialization
+boto3.set_stream_logger(name="aws_xray_sdk.core.context", level=logging.ERROR)
+boto3.set_stream_logger(name="aws_xray_sdk.core.lambda_launcher", level=logging.ERROR)
+boto3.set_stream_logger(name="aws_xray_sdk.core.patcher", level=logging.ERROR)
 boto3.set_stream_logger(name="botocore.credentials", level=logging.ERROR)
 patch_all()
 group = Group()
@@ -47,7 +51,14 @@ def handler(event, context):
                 case Action.GET_GROUP:
                     output = group.get_group(uid)
                 case Action.GET_GROUP_STATS:
+                    ts_start = datetime.datetime.now()
                     output = analysis.get_group_stats()
+                    ts_end = datetime.datetime.now()
+                    print(json.dumps({
+                        "start": ts_start.isoformat(),
+                        "end": ts_end.isoformat(),
+                        "duration": str(ts_end - ts_start)
+                    }))
                     if len(stats) == 36:
                         output = output.get(stats, {})
                 case _:

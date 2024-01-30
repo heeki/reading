@@ -9,6 +9,9 @@ from lib.domain.user import User
 from lib.domain.analysis import Analysis
 
 # initialization
+boto3.set_stream_logger(name="aws_xray_sdk.core.context", level=logging.ERROR)
+boto3.set_stream_logger(name="aws_xray_sdk.core.lambda_launcher", level=logging.ERROR)
+boto3.set_stream_logger(name="aws_xray_sdk.core.patcher", level=logging.ERROR)
 boto3.set_stream_logger(name="botocore.credentials", level=logging.ERROR)
 patch_all()
 user = User()

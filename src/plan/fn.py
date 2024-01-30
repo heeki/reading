@@ -8,6 +8,9 @@ from lib.util import build_response, get_body, get_param, log_event
 from lib.domain.plan import Plan
 
 # initialization
+boto3.set_stream_logger(name="aws_xray_sdk.core.context", level=logging.ERROR)
+boto3.set_stream_logger(name="aws_xray_sdk.core.lambda_launcher", level=logging.ERROR)
+boto3.set_stream_logger(name="aws_xray_sdk.core.patcher", level=logging.ERROR)
 boto3.set_stream_logger(name="botocore.credentials", level=logging.ERROR)
 patch_all()
 plan = Plan()

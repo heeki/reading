@@ -30,6 +30,8 @@ Parameters:
   # Lambda
   pFnMemory:
     Type: Number
+  pFnMemoryStats:
+    Type: Number
   pFnTimeout:
     Type: Number
   pRedirectUrl:
@@ -186,6 +188,7 @@ Resources:
   FnGroup:
     Type: AWS::Serverless::Function
     Properties:
+      MemorySize: !Ref pFnMemoryStats
       CodeUri: ../../src/group
       Role: !GetAtt FnRole.Arn
       LoggingConfig:
@@ -216,6 +219,7 @@ Resources:
   FnUser:
     Type: AWS::Serverless::Function
     Properties:
+      MemorySize: !Ref pFnMemoryStats
       CodeUri: ../../src/user
       Role: !GetAtt FnRole.Arn
       LoggingConfig:

@@ -81,7 +81,14 @@ class Tests(unittest.TestCase):
     def test_group_stats(self):
         print()
         analysis = Analysis()
+        ts_start = datetime.datetime.now()
         response = analysis.get_group_stats()
+        ts_end = datetime.datetime.now()
+        print(json.dumps({
+            "start": ts_start.isoformat(),
+            "end": ts_end.isoformat(),
+            "duration": str(ts_end - ts_start)
+        }))
         print(json.dumps(response))
 
     def test_user(self):
