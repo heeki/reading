@@ -26,6 +26,10 @@ class Reading:
             response += user_readings
         return response
 
+    def list_readings_until_today(self):
+        response = self.port.list_readings_until_today()
+        return response
+
     def get_reading(self, uid):
         response = self.port.get_reading(uid)
         return response

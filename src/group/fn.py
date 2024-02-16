@@ -16,7 +16,6 @@ boto3.set_stream_logger(name="aws_xray_sdk.core.patcher", level=logging.ERROR)
 boto3.set_stream_logger(name="botocore.credentials", level=logging.ERROR)
 patch_all()
 group = Group()
-analysis = Analysis()
 redirect_url = os.environ.get("REDIRECT_URL")
 
 # action
@@ -52,6 +51,7 @@ def handler(event, context):
                     output = group.get_group(uid)
                 case Action.GET_GROUP_STATS:
                     ts_start = datetime.datetime.now()
+                    analysis = Analysis()
                     output = analysis.get_group_stats()
                     ts_end = datetime.datetime.now()
                     print(json.dumps({

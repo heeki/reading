@@ -68,6 +68,22 @@ class ReadingPort:
         output = self.transform(response)
         return output
 
+    def list_readings_until_today(self):
+        start = datetime.datetime.now().strftime("%Y-01-01T00:00:00.000000")
+        today = datetime.datetime.now().strftime("%Y-%m-%dT00:00:00.000000")
+        response = self.client.query(
+            key_condition = "category = :category",
+            filter_expression="sent_date between :start_date and :end_date",
+            expression_values = {
+                ":category": {"S": "reading"},
+                ":start_date": {"S": start},
+                ":end_date": {"S": today}
+            },
+            projection_expression="category, uid, description, plan_id, sent_date, sent_count, read_by"
+        )
+        output = self.transform(response)
+        return output
+
     def get_reading(self, uid):
         response = self.client.query(
             key_condition = "category = :category AND uid = :uid",

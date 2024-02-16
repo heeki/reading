@@ -15,7 +15,6 @@ boto3.set_stream_logger(name="aws_xray_sdk.core.patcher", level=logging.ERROR)
 boto3.set_stream_logger(name="botocore.credentials", level=logging.ERROR)
 patch_all()
 user = User()
-analysis = Analysis()
 redirect_url = os.environ.get("REDIRECT_URL")
 
 # action
@@ -71,6 +70,7 @@ def handler(event, context):
                 case Action.GET_USER:
                     output = user.get_user(uid)
                 case Action.GET_USER_STATS:
+                    analysis = Analysis()
                     output = analysis.get_user_stats(stats)
                 case Action.SUBSCRIBE_USER:
                     output = user.subscribe_user(subscribe)

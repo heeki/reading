@@ -9,24 +9,45 @@ class Analysis:
         self.user = User()
         self.group = Group()
         self.reading = Reading()
+        self.users = self.user.list_users()
+        self.groups = self.group.list_groups()
+        self.readings = self.reading.list_readings_until_today()
+        self.sent_count = self.get_reading_sent_count()
+
+    # helper
+    def _format_isoformatted_date(self, isoformatted):
+        return str(datetime.datetime.fromisoformat(isoformatted).date())
+
+    def _list_users_by_group(self, group_id):
+        response = []
+        for user in self.users:
+            if group_id in user["group_ids"]:
+                response.append(user)
+        return response
+
+    def _list_readings_by_user(self, user_id):
+        response = []
+        for reading in self.readings:
+            if user_id in reading["read_by"]:
+                response.append(reading)
+        return response
 
     # user
-    def get_user_stats(self, uid):
-        readings = self.reading.list_readings_by_user(uid)
+    def get_user_stats(self, user_id):
+        readings = self._list_readings_by_user(user_id)
         completions = {}
         for reading in readings:
-            sent_date = str(datetime.datetime.fromisoformat(reading["sent_date"]).date())
+            sent_date = self._format_isoformatted_date(reading["sent_date"])
             if "read_by" in reading:
                 read_by = json.loads(reading["read_by"])
-                if uid in read_by:
-                    completions[sent_date] = read_by[uid]
-        sent_count = self.get_sent_count_all()
+                if user_id in read_by:
+                    completions[sent_date] = read_by[user_id]
         sent_dates = []
-        for sent_date in sent_count["users"].keys():
-            if uid in sent_count["users"][sent_date]:
+        for sent_date in self.sent_count["users"].keys():
+            if user_id in self.sent_count["users"][sent_date]:
                 sent_dates.append(sent_date)
         response = {
-            "user_id": uid,
+            "user_id": user_id,
             "user_completion_count": len(readings),
             "user_completion_per_reading": completions,
             "sent_count": len(sent_dates),
@@ -35,13 +56,13 @@ class Analysis:
         return response
 
     # group
-    def _get_group_stats(self, uid):
+    def _get_group_stats(self, group_id):
         response = {
-            "group_id": uid,
+            "group_id": group_id,
             "group_completion_count": 0,
             "group_completion_count_per_reading": {}
         }
-        users = self.user.list_users_by_group(uid)
+        users = self._list_users_by_group(group_id)
         for user in users:
             user_id = user["uid"]
             user_stats = self.get_user_stats(user_id)
@@ -55,8 +76,7 @@ class Analysis:
 
     def get_group_stats(self):
         response = {}
-        groups = self.group.list_groups()
-        for group in groups:
+        for group in self.groups:
             group_id = group["uid"]
             group_stats = self._get_group_stats(group_id)
             response[group_id] = {
@@ -65,23 +85,19 @@ class Analysis:
                 "sent_count": 0,
                 "sent_count_per_reading": {}
             }
-        sent_count = self.get_sent_count_all()
-        for sent_date in sent_count["groups"].keys():
-            for group_id in sent_count["groups"][sent_date].keys():
-                current_count = sent_count["groups"][sent_date][group_id]
+        for sent_date in self.sent_count["groups"].keys():
+            for group_id in self.sent_count["groups"][sent_date].keys():
+                current_count = self.sent_count["groups"][sent_date][group_id]
                 response[group_id]["sent_count"] += current_count
                 response[group_id]["sent_count_per_reading"][sent_date] = current_count
         return response
 
     # reading
-    def get_sent_count_all(self):
-        readings = self.reading.list_readings()
-        today = datetime.datetime.now().date()
+    def get_reading_sent_count(self):
         response = {}
-        for reading in readings:
-            reading_date = datetime.datetime.fromisoformat(reading["sent_date"]).date()
-            if reading_date <= today and "sent_count" in reading:
-                date_key = str(reading_date)
+        for reading in self.readings:
+            date_key = self._format_isoformatted_date(reading["sent_date"])
+            if "sent_count" in reading:
                 sent_count = json.loads(reading["sent_count"])
                 for group_id in sent_count.keys():
                     if group_id in response:
