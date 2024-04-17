@@ -74,7 +74,7 @@ def handler(event, context):
                     output = reading.add_user_completion(uid, user_id)
                     if redirect_url is not None:
                         response_code = 302
-                        response_headers["Location"] = f"{redirect_url}?uid={user_id}"
+                        response_headers["Location"] = f"{redirect_url}?uid={user_id}&reading_id={uid}"
                 case _:
                     output = reading.list_readings()
         case "POST":
