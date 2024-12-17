@@ -69,11 +69,25 @@ class DynamoDBAdapter:
             raise e
         return response
 
-    def scan(self):
-        response = self.client.scan(
-            TableName=self.table
-        )
+    def _scan(self, last_key=None):
+        kwargs = {
+            "TableName": self.table
+        }
+        if last_key is not None:
+            kwargs["ExclusiveStartKey"] = last_key
+        response = self.client.scan(**kwargs)
         return response
+
+    def scan(self):
+        output = {
+            "Items": []
+        }
+        response = self._scan()
+        output["Items"].extend(response["Items"])
+        while "LastEvaluatedKey" in response:
+            response = self._scan(last_key=response['LastEvaluatedKey'])
+            output["Items"].extend(response["Items"])
+        return output
 
     def _query(self, expression_values, key_condition, projection_expression=None, filter_expression=None, last_key=None):
         kwargs = {
