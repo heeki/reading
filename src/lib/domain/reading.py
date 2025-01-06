@@ -17,6 +17,10 @@ class Reading:
         response = self.port.list_readings_by_user(user_id)
         return response
 
+    def list_readings_by_plan(self, plan_id):
+        response = self.port.list_readings_by_plan(plan_id)
+        return response
+
     def list_readings_by_group(self, group_id):
         users = self.user.list_users_by_group(group_id)
         response = []

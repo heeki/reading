@@ -25,8 +25,9 @@ class Action(Enum):
     GET_READING_BY_DATE = 5
     GET_SENT_COUNT = 6
     ADD_USER_COMPLETION = 7
+    LIST_READINGS_BY_PLAN = 8
 
-def get_action(qsp, uid, date, user_id, group_id, sent_count):
+def get_action(qsp, uid, date, user_id, group_id, plan_id, sent_count):
     response = Action.LIST_READINGS
     if qsp is None:
         response = Action.LIST_READINGS
@@ -34,6 +35,8 @@ def get_action(qsp, uid, date, user_id, group_id, sent_count):
         response = Action.LIST_READINGS_BY_USER
     elif len(qsp) == 1 and group_id is not None:
         response = Action.LIST_READINGS_BY_GROUP
+    elif len(qsp) == 1 and plan_id is not None:
+        response = Action.LIST_READINGS_BY_PLAN
     elif len(qsp) == 1 and uid is not None:
         response = Action.GET_READING
     elif len(qsp) == 1 and date is not None:
@@ -58,12 +61,15 @@ def handler(event, context):
             user_id = get_param(qsp, "user_id")
             group_id = get_param(qsp, "group_id")
             sent_count = get_param(qsp, "group_id")
-            action = get_action(qsp, uid, date, user_id, group_id, sent_count)
+            plan_id = get_param(qsp, "plan_id")
+            action = get_action(qsp, uid, date, user_id, group_id, plan_id, sent_count)
             match action:
                 case Action.LIST_READINGS_BY_USER:
                     output = reading.list_readings_by_user(user_id)
                 case Action.LIST_READINGS_BY_GROUP:
                     output = reading.list_readings_by_group(group_id)
+                case Action.LIST_READINGS_BY_PLAN:
+                    output = reading.list_readings_by_plan(plan_id)
                 case Action.GET_READING:
                     output = reading.get_reading(uid)
                 case Action.GET_READING_BY_DATE:
