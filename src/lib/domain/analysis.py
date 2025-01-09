@@ -49,7 +49,7 @@ class Analysis:
         response = {
             "user_id": user_id,
             "user_completion_count": len(readings),
-            "user_completion_per_reading": completions,
+            "user_completion_count_per_reading": completions,
             "sent_count": len(sent_dates),
             "sent_dates": sent_dates
         }
@@ -67,7 +67,7 @@ class Analysis:
             user_id = user["uid"]
             user_stats = self.get_user_stats(user_id)
             response["group_completion_count"] += user_stats["user_completion_count"]
-            for sent_date in user_stats["user_completion_per_reading"].keys():
+            for sent_date in user_stats["user_completion_count_per_reading"].keys():
                 if sent_date in response["group_completion_count_per_reading"]:
                     response["group_completion_count_per_reading"][sent_date] += 1
                 else:
