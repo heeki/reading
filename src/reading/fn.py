@@ -26,6 +26,7 @@ class Action(Enum):
     GET_SENT_COUNT = 6
     ADD_USER_COMPLETION = 7
     LIST_READINGS_BY_PLAN = 8
+    CATCHUP_USER_COMPLETION = 9
 
 def get_action(qsp, uid, date, user_id, group_id, plan_id, sent_count):
     response = Action.LIST_READINGS
@@ -45,6 +46,8 @@ def get_action(qsp, uid, date, user_id, group_id, plan_id, sent_count):
         response = Action.GET_SENT_COUNT
     elif len(qsp) == 2 and uid is not None and user_id is not None:
         response = Action.ADD_USER_COMPLETION
+    elif len(qsp) == 3 and uid is not None and user_id is not None and group_id is not None:
+        response = Action.CATCHUP_USER_COMPLETION
     return response
 
 def handler(event, context):
@@ -78,6 +81,11 @@ def handler(event, context):
                     output = reading.get_sent_count(sent_count)
                 case Action.ADD_USER_COMPLETION:
                     output = reading.add_user_completion(uid, user_id)
+                    if redirect_url is not None:
+                        response_code = 302
+                        response_headers["Location"] = f"{redirect_url}?uid={user_id}&reading_id={uid}"
+                case Action.CATCHUP_USER_COMPLETION:
+                    output = reading.catchup_user_completion(uid, user_id, group_id)
                     if redirect_url is not None:
                         response_code = 302
                         response_headers["Location"] = f"{redirect_url}?uid={user_id}&reading_id={uid}"

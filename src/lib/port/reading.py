@@ -224,6 +224,46 @@ class ReadingPort:
             output = reading
         return output
 
+    def catchup_user_completion(self, uid, user_id, group_id):
+        reading = self.get_reading(uid)
+        output = reading
+        read_by = json.loads(reading.get("read_by", "{}"))
+        sent_count = json.loads(reading.get("sent_count", "{}"))
+        if user_id not in read_by:
+            read_by[user_id] = datetime.datetime.now().isoformat()
+            item_key = {
+                "category": {"S": "reading"},
+                "uid": {"S": uid}
+            }
+            try:
+                response = self.client.update(
+                    item_key,
+                    update_expression="SET #read_by = :read_by",
+                    condition_expression="#uid = :uid",
+                    expression_names = {
+                        "#uid": "uid",
+                        "#read_by": "read_by"
+                    },
+                    expression_attributes = {
+                        ":uid": {"S": uid},
+                        ":read_by": {"S": json.dumps(read_by)}
+                    }
+                )
+                output = self.transform(response)
+            except ClientError as e:
+                output = {
+                    "error": e.response["Error"]["Code"],
+                    "message": "requested uid not found"
+                }
+        if user_id not in sent_count["users"]:
+            sent_count["users"].append(user_id)
+            if group_id in sent_count["groups"]:
+                sent_count["groups"][group_id] += 1
+            else:
+                sent_count["groups"][group_id] = 1
+            output = self.update_reading_sent_count(uid, sent_count)
+        return output
+
     def update_reading_sent_count(self, uid, sent_count):
         item_key = {
             "category": {"S": "reading"},
