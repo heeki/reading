@@ -2,25 +2,25 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: Daily reading infrastructure
 Transform: AWS::Serverless-2016-10-31
 Parameters:
-  pDomainNameRoot:
+  domainNameRoot:
     Type: String
-  pDomainNameEmail:
+  domainNameEmail:
     Type: String
-  pDomainNameApi:
+  domainNameApi:
     Type: String
-  pEmailSubject:
+  emailSubject:
     Type: String
-  pHostedZoneId:
+  hostedZoneId:
     Type: String
 Resources:
   # API Gateway
   Certificate:
     Type: AWS::CertificateManager::Certificate
     Properties:
-      DomainName: !Ref pDomainNameApi
+      DomainName: !Ref domainNameApi
       DomainValidationOptions:
-        - DomainName: !Ref pDomainNameApi
-          HostedZoneId: !Ref pHostedZoneId
+        - DomainName: !Ref domainNameApi
+          HostedZoneId: !Ref hostedZoneId
       ValidationMethod: DNS
       Tags:
         - Key: application:group
@@ -32,7 +32,7 @@ Resources:
   Domain:
     Type: AWS::ApiGateway::DomainName
     Properties:
-      DomainName: !Ref pDomainNameApi
+      DomainName: !Ref domainNameApi
       EndpointConfiguration:
         Types:
           - REGIONAL
@@ -47,8 +47,8 @@ Resources:
   DomainRecordSet:
     Type: AWS::Route53::RecordSet
     Properties:
-      HostedZoneId: !Ref pHostedZoneId
-      Name: !Ref pDomainNameApi
+      HostedZoneId: !Ref hostedZoneId
+      Name: !Ref domainNameApi
       Type: A
       AliasTarget:
         HostedZoneId: !GetAtt Domain.RegionalHostedZoneId
@@ -77,15 +77,15 @@ Resources:
     Properties:
       ConfigurationSetAttributes:
         ConfigurationSetName: !Ref EmailConfiguration
-      EmailIdentity: !Ref pDomainNameRoot
+      EmailIdentity: !Ref domainNameRoot
       MailFromAttributes:
         BehaviorOnMxFailure: USE_DEFAULT_VALUE
-        MailFromDomain: !Ref pDomainNameEmail
+        MailFromDomain: !Ref domainNameEmail
   EmailTemplate:
     Type: AWS::SES::Template
     Properties:
       Template:
-        SubjectPart: !Sub "${pEmailSubject} for {{date}}"
+        SubjectPart: !Sub "${emailSubject} for {{date}}"
         HtmlPart: "<p>{{reading}}</p><br><p><a href='{{complete}}'>Click here when you've completed today's reading</a>.</p><p>To unsubscribe, click <a href='{{unsubscribe}}'>here</a>.<p>"
 Outputs:
   outCertificateArn:
