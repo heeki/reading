@@ -65,6 +65,10 @@ backup.deploy:
 backup.delete:
 	sam delete --stack-name ${BACKUP_STACK}
 
+# backup local testing
+backup.local.invoke:
+	sam local invoke -t ${BACKUP_TEMPLATE} --parameter-overrides ${BACKUP_PARAMS} --env-vars etc/envvars.json -e etc/event.json FnBackup | jq -r '.body' | jq
+
 # testing endpoints
 test: test.group test.group_stats test.user test.user_by_group test.user_by_plan test.user_subscribe test.user_stats test.plan test.reading test.reading_by_date test.reading_by_user test.reading_by_group
 test.valid: test.group test.user test.plan test.reading

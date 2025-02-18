@@ -17,5 +17,4 @@ def handler(event, context):
     log_event(event)
     response = backup.backup()
     response.pop("Items", None)
-    print(json.dumps(response))
     return response
