@@ -76,6 +76,8 @@ Resources:
   Api:
     Type: AWS::Serverless::Api
     Properties:
+      # EndpointConfiguration:
+      #   Type: REGIONAL
       AccessLogSetting:
         DestinationArn: !GetAtt ApiLogGroup.Arn
         Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","routeKey":"$context.routeKey", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
@@ -120,10 +122,10 @@ Resources:
       - ApiStage
   ApiMappingV1:
     DependsOn: Api
-    Type: AWS::ApiGateway::BasePathMapping
+    Type: AWS::ApiGatewayV2::ApiMapping
     Properties:
-      RestApiId: !Ref Api
-      BasePath: !Ref apiBasePathV1
+      ApiId: !Ref Api
+      ApiMappingKey: !Ref apiBasePathV1
       DomainName: !Ref apiDomainName
       Stage: !Ref apiStage
     DependsOn:
