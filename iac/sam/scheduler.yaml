@@ -6,35 +6,35 @@ Transform:
 Globals:
   Function:
     Layers:
-      - arn:aws:lambda:us-east-1:546275881527:layer:xray-python3:3
-      - arn:aws:lambda:us-east-1:580247275435:layer:LambdaInsightsExtension:38
-    MemorySize: !Ref pFnMemory
+      - arn:aws:lambda:us-east-1:546275881527:layer:xray-python3:4
+      - arn:aws:lambda:us-east-1:580247275435:layer:LambdaInsightsExtension:55
+    MemorySize: !Ref fnMemory
     Runtime: python3.11
-    Timeout: !Ref pFnTimeout
+    Timeout: !Ref fnTimeout
     Tracing: Active
 Parameters:
-  pSourceEmail:
+  sourceEmail:
     Type: String
-  pSendType:
+  sendType:
     Type: String
-  pEndpoint:
+  endpoint:
     Type: String
-  pPlanId:
+  planId:
     Type: String
-  pApiKey:
+  apiKey:
     Type: String
-  pEmailTemplate:
+  emailTemplate:
     Type: String
-  pEmailSubject:
+  emailSubject:
     Type: String
-  pDomainEmail:
+  domainEmail:
     Type: String
 Resources:
   # Secret
   Token:
     Type: AWS::SecretsManager::Secret
     Properties:
-      SecretString: !Ref pApiKey
+      SecretString: !Ref apiKey
       Tags:
         - Key: application:group
           Value: reading
@@ -88,11 +88,11 @@ Resources:
                 source: "<source>"
                 time: "<time>"
                 detail:
-                  source_email: !Ref pSourceEmail
-                  reading_endpoint: !Sub "${pEndpoint}/reading"
-                  user_endpoint: !Sub "${pEndpoint}/user"
-                  plan_id: !Ref pPlanId
-                  send_type: !Ref pSendType
+                  source_email: !Ref sourceEmail
+                  reading_endpoint: !Sub "${endpoint}/reading"
+                  user_endpoint: !Sub "${endpoint}/user"
+                  plan_id: !Ref planId
+                  send_type: !Ref sendType
   Schedule:
     Type: AWS::Scheduler::Schedule
     Properties:
@@ -110,11 +110,11 @@ Resources:
             id: "<aws.scheduler.execution-id>"
             time: "<aws.scheduler.scheduled-time>"
             detail:
-              source_email: !Ref pSourceEmail
-              reading_endpoint: !Sub "${pEndpoint}/reading"
-              user_endpoint: !Sub "${pEndpoint}/user"
-              plan_id: !Ref pPlanId
-              send_type: !Ref pSendType
+              source_email: !Ref sourceEmail
+              reading_endpoint: !Sub "${endpoint}/reading"
+              user_endpoint: !Sub "${endpoint}/user"
+              plan_id: !Ref planId
+              send_type: !Ref sendType
   Connection:
     Type: AWS::Events::Connection
     Properties:
@@ -193,7 +193,7 @@ Resources:
                   ForAnyValue:StringEquals:
                     "states:HTTPMethod": ["GET", "PUT"]
                   StringLike:
-                    "states:HTTPEndpoint": !Join ["/", [!Ref pEndpoint, "*"]]
+                    "states:HTTPEndpoint": !Join ["/", [!Ref endpoint, "*"]]
         - PolicyName: sns
           PolicyDocument:
             Version: '2012-10-17'
@@ -213,15 +213,15 @@ Resources:
                 Resource: "*"
                 Condition:
                   StringLike:
-                    "ses:FromAddress": !Join ["@", ["*", !Ref pDomainEmail]]
+                    "ses:FromAddress": !Join ["@", ["*", !Ref domainEmail]]
   SFn:
     Type: AWS::Serverless::StateMachine
     Properties:
         DefinitionUri: ../asl.json
         DefinitionSubstitutions:
           Connection: !GetAtt Connection.Arn
-          EmailSubject: !Ref pEmailSubject
-          EmailTemplate: !Ref pEmailTemplate
+          EmailSubject: !Ref emailSubject
+          EmailTemplate: !Ref emailTemplate
           Topic: !Ref Topic
         Logging:
           Destinations:
