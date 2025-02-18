@@ -7,34 +7,34 @@ Globals:
   Function:
     Environment:
       Variables:
-        REDIRECT_URL: !Ref pRedirectUrl
+        REDIRECT_URL: !Ref redirectUrl
         TABLE: !Ref Table
         TZ: America/New_York
     Handler: fn.handler
     Layers:
-      - arn:aws:lambda:us-east-1:546275881527:layer:xray-python3:3
-      - arn:aws:lambda:us-east-1:580247275435:layer:LambdaInsightsExtension:38
+      - arn:aws:lambda:us-east-1:546275881527:layer:xray-python3:4
+      - arn:aws:lambda:us-east-1:580247275435:layer:LambdaInsightsExtension:55
       - !Ref LayerLibraries
-    MemorySize: !Ref pFnMemory
+    MemorySize: !Ref fnMemory
     Runtime: python3.11
-    Timeout: !Ref pFnTimeout
+    Timeout: !Ref fnTimeout
     Tracing: Active
 Parameters:
   # APIGW
-  pApiDomainName:
+  apiDomainName:
     Type: String
-  pApiBasePath:
+  apiBasePath:
     Type: String
-  pApiStage:
+  apiStage:
     Type: String
   # Lambda
-  pFnMemory:
+  fnMemory:
     Type: Number
-  pFnMemoryStats:
+  fnMemoryStats:
     Type: Number
-  pFnTimeout:
+  fnTimeout:
     Type: Number
-  pRedirectUrl:
+  redirectUrl:
     Type: String
 Resources:
   # DynamoDB
@@ -83,7 +83,7 @@ Resources:
           LoggingLevel: ERROR
           DataTraceEnabled: true
           MetricsEnabled: true
-      StageName: !Ref pApiStage
+      StageName: !Ref apiStage
       DefinitionBody:
         Fn::Transform:
           Name: AWS::Include
@@ -111,9 +111,9 @@ Resources:
     Type: AWS::ApiGateway::BasePathMapping
     Properties:
       RestApiId: !Ref Api
-      BasePath: !Ref pApiBasePath
-      DomainName: !Ref pApiDomainName
-      Stage: !Ref pApiStage
+      BasePath: !Ref apiBasePath
+      DomainName: !Ref apiDomainName
+      Stage: !Ref apiStage
     DependsOn:
       - ApiStage
   # Lambda
@@ -188,7 +188,7 @@ Resources:
   FnGroup:
     Type: AWS::Serverless::Function
     Properties:
-      MemorySize: !Ref pFnMemoryStats
+      MemorySize: !Ref fnMemoryStats
       CodeUri: ../../src/group
       Role: !GetAtt FnRole.Arn
       LoggingConfig:
@@ -219,7 +219,7 @@ Resources:
   FnUser:
     Type: AWS::Serverless::Function
     Properties:
-      MemorySize: !Ref pFnMemoryStats
+      MemorySize: !Ref fnMemoryStats
       CodeUri: ../../src/user
       Role: !GetAtt FnRole.Arn
       LoggingConfig:
@@ -311,7 +311,7 @@ Outputs:
   outApi:
     Value: !Ref Api
   outApiEndpoint:
-    Value: !Sub 'https://${Api}.execute-api.${AWS::Region}.amazonaws.com/${pApiStage}'
+    Value: !Sub 'https://${Api}.execute-api.${AWS::Region}.amazonaws.com/${apiStage}'
   outFnGroup:
     Value: !Ref FnGroup
   outFnUser:
