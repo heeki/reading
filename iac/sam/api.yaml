@@ -25,6 +25,8 @@ Parameters:
     Type: String
   apiBasePath:
     Type: String
+  apiBasePathV1:
+    Type: String
   apiStage:
     Type: String
   # Lambda
@@ -112,6 +114,16 @@ Resources:
     Properties:
       RestApiId: !Ref Api
       BasePath: !Ref apiBasePath
+      DomainName: !Ref apiDomainName
+      Stage: !Ref apiStage
+    DependsOn:
+      - ApiStage
+  ApiMappingV1:
+    DependsOn: Api
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      RestApiId: !Ref Api
+      BasePath: !Ref apiBasePathV1
       DomainName: !Ref apiDomainName
       Stage: !Ref apiStage
     DependsOn:
