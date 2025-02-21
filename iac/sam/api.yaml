@@ -20,6 +20,8 @@ Globals:
     Timeout: !Ref fnTimeout
     Tracing: Active
 Parameters:
+  environment:
+    Type: String
   # APIGW
   apiDomainName:
     Type: String
@@ -37,6 +39,8 @@ Parameters:
   fnTimeout:
     Type: Number
   redirectUrl:
+    Type: String
+  layerLibrariesName:
     Type: String
 Resources:
   # DynamoDB
@@ -72,6 +76,8 @@ Resources:
           Value: infrastructure
         - Key: application:owner
           Value: heeki
+        - Key: application:environment
+          Value: !Ref environment
   # APIGW
   Api:
     Type: AWS::Serverless::Api
@@ -98,6 +104,7 @@ Resources:
         application:group: reading
         application:subgroup: api
         application:owner: heeki
+        application:environment: !Ref environment
   ApiLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -110,6 +117,8 @@ Resources:
           Value: api
         - Key: application:owner
           Value: heeki
+        - Key: application:environment
+          Value: !Ref environment
   ApiMapping:
     DependsOn: Api
     Type: AWS::ApiGateway::BasePathMapping
@@ -139,7 +148,7 @@ Resources:
         - python3.11
         - python3.12
       ContentUri: ../../tmp/libraries
-      LayerName: reading-libraries
+      LayerName: !Ref layerLibrariesName
   FnRole:
     Type: AWS::IAM::Role
     Properties:
@@ -211,6 +220,7 @@ Resources:
         application:group: reading
         application:subgroup: group
         application:owner: heeki
+        application:environment: !Ref environment
   FnGroupLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -223,6 +233,8 @@ Resources:
           Value: group
         - Key: application:owner
           Value: heeki
+        - Key: application:environment
+          Value: !Ref environment
   FnGroupPerm:
     Type: AWS::Lambda::Permission
     Properties:
@@ -242,6 +254,7 @@ Resources:
         application:group: reading
         application:subgroup: user
         application:owner: heeki
+        application:environment: !Ref environment
   FnUserLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -254,6 +267,8 @@ Resources:
           Value: user
         - Key: application:owner
           Value: heeki
+        - Key: application:environment
+          Value: !Ref environment
   FnUserPerm:
     Type: AWS::Lambda::Permission
     Properties:
@@ -272,6 +287,7 @@ Resources:
         application:group: reading
         application:subgroup: plan
         application:owner: heeki
+        application:environment: !Ref environment
   FnPlanLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -284,6 +300,8 @@ Resources:
           Value: plan
         - Key: application:owner
           Value: heeki
+        - Key: application:environment
+          Value: !Ref environment
   FnPlanPerm:
     Type: AWS::Lambda::Permission
     Properties:
@@ -302,6 +320,7 @@ Resources:
         application:group: reading
         application:subgroup: reading
         application:owner: heeki
+        application:environment: !Ref environment
   FnReadingLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -314,6 +333,8 @@ Resources:
           Value: reading
         - Key: application:owner
           Value: heeki
+        - Key: application:environment
+          Value: !Ref environment
   FnReadingPerm:
     Type: AWS::Lambda::Permission
     Properties:
