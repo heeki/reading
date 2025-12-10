@@ -12,8 +12,8 @@ Globals:
         TZ: America/New_York
     Handler: fn.handler
     Layers:
-      - arn:aws:lambda:us-east-1:546275881527:layer:xray-python3:4
-      - arn:aws:lambda:us-east-1:580247275435:layer:LambdaInsightsExtension:55
+      # - arn:aws:lambda:us-east-1:546275881527:layer:xray-python3:4
+      - arn:aws:lambda:us-east-1:580247275435:layer:LambdaInsightsExtension:60
       - !Ref layerLibrariesArn
     MemorySize: !Ref fnMemory
     Runtime: python3.12
@@ -61,7 +61,7 @@ Resources:
     Properties:
       FlexibleTimeWindow:
         Mode: "OFF"
-      ScheduleExpression: cron(0 0 * * ? *)
+      ScheduleExpression: cron(0 23 ? * MON-FRI *)
       ScheduleExpressionTimezone: "America/New_York"
       State: ENABLED
       Target:
