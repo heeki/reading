@@ -82,7 +82,8 @@ class ReadingPort:
         return output
 
     def list_readings_until_today(self):
-        start = datetime.datetime.now().strftime("%Y-01-01T00:00:00.000000")
+        # start = datetime.datetime.now().strftime("%Y-01-01T00:00:00.000000")
+        start = datetime.datetime.now().strftime("2025-12-10T00:00:00.000000")
         today = datetime.datetime.now().strftime("%Y-%m-%dT00:00:00.000000")
         response = self.client.query(
             key_condition = "category = :category",
